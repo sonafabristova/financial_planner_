@@ -1,0 +1,97 @@
+﻿using System;
+using System.Linq;
+using System.Windows;
+using financial_planner.Models;
+
+namespace financial_planner.View
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            if (AppData.CurrentUser != null)
+            {
+                UserNameRun.Text = AppData.CurrentUser.FullName;
+
+                UpdateStatistics();
+                LoadGoals();
+            }
+        }
+
+        private void UpdateStatistics()
+        {
+            var account = AppData.GetUserAccount(AppData.CurrentUser.Id);
+            if (account != null)
+            {
+                MonthlyIncomeText.Text = $"{account.MonthlyIncome:N0} ₽";
+            }
+
+            var activeGoals = AppData.GetUserGoals(AppData.CurrentUser.Id)
+                .Where(g => g.Status.Name == "Активна")
+                .Count();
+            ActiveGoalsCountText.Text = activeGoals.ToString();
+        }
+
+        private void LoadGoals()
+        {
+            var goals = AppData.GetUserGoals(AppData.CurrentUser.Id)
+                .Where(g => g.Status.Name == "Активна")
+                .ToList();
+
+            GoalsList.ItemsSource = goals;
+        }
+
+        private void ButtonHelp_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Помощь по программе:\n\n" +
+                "1. Вносите доходы и расходы\n" +
+                "2. Создавайте цели накопления\n" +
+                "3. Используйте 'Распределение средств' для автоматического накопления\n" +
+                "4. Отслеживайте прогресс в списке целей",
+                "Помощь", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonGoals_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть список всех целей", "Мои цели",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonNewGoal_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть окно создания новой цели", "Новая цель",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonDistribution_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть окно распределения средств", "Распределение",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonTopUpGoal_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть окно пополнения цели", "Пополнить цель",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonAddIncome_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть окно внесения дохода", "Внести доход",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonAddExpense_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Открыть окно внесения расхода", "Внести расход",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ButtonExit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+    }
+}

@@ -1,0 +1,32 @@
+﻿<Window x:Class="financial_planner.View.AutorizationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowState="Maximized"
+        WindowStyle="None"
+        Title="Авторизация" Height="450" Width="800">
+    <Grid Background="#E3F2FD">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,80,130,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Логин" Foreground="#1976D2"/>
+                <TextBox Margin="20,5,15,10" Width="130" Name="BoxLogin" Background="#FFFFFF" BorderBrush="#42A5F5"/>
+            </StackPanel>
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                <TextBlock Text="Пароль" Foreground="#1976D2"/>
+                <PasswordBox Margin="12,5,15,10" Width="130" Name="BoxPass" Background="#FFFFFF" BorderBrush="#42A5F5"/>
+            </StackPanel>
+            <StackPanel Margin="0,15,0,0" Orientation="Horizontal">
+                <Button Margin="0,5,20,0" Width="100" Height="20" Content="Войти" 
+                        Name="ButtonLogin" Click="ButtonLogin_Click" 
+                        Background="#42A5F5" Foreground="White" BorderThickness="0"/>
+                <Button Margin="0,5,0,0" Content="Зарегистрироваться" Height="20" 
+                        Name="ButtonRegister" Click="ButtonRegister_Click" 
+                        Background="#90CAF9" Foreground="White" BorderThickness="0"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+            <TextBlock Text="ДОБРО ПОЖАЛОВАТЬ!" Margin="10,160,150,10" 
+                       FontSize="25" FontWeight="DemiBold" Foreground="#0D47A1"/>
+        </StackPanel>
+    </Grid>
+</Window>
