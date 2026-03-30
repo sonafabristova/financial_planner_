@@ -1,56 +1,54 @@
 ﻿using System.Windows;
 using financial_planner.Models;
 
-namespace financial_planner.View 
+namespace financial_planner.View
 {
     public partial class RegistrationWindow : Window
     {
+        public User? RegUser { get; set; } = null;
+
         public RegistrationWindow()
         {
             InitializeComponent();
         }
 
-        private void ButtonCreateAccount_Click(object sender, RoutedEventArgs e)
+        private void ButtonRegister_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(BoxLogin.Text))
+            if (!string.IsNullOrEmpty(BoxLogin.Text) &&
+                !string.IsNullOrEmpty(BoxPass.Password) &&
+                !string.IsNullOrEmpty(BoxFullName.Text))
             {
-                MessageBox.Show("Введите логин", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                RegUser = new User
+                {
+                    Id = AppData.Users.Count > 0 ? AppData.Users[AppData.Users.Count - 1].Id + 1 : 1,
+                    Username = BoxLogin.Text,
+                    Password = BoxPass.Password,
+                    FullName = BoxFullName.Text,
+                    Email = BoxEmail.Text,
+                    RegistrationDate = System.DateTime.Now
+                };
 
-            if (string.IsNullOrWhiteSpace(BoxPass.Password))
-            {
-                MessageBox.Show("Введите пароль", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (BoxPass.Password != BoxConfirmPass.Password)
-            {
-                MessageBox.Show("Пароли не совпадают", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(BoxFullName.Text))
-            {
-                MessageBox.Show("Введите ФИО", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (AppData.RegisterUser(BoxLogin.Text, BoxPass.Password, BoxEmail.Text, BoxFullName.Text))
-            {
-                MessageBox.Show("Регистрация прошла успешно!", "Успех",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
-                this.Close();
+                if (AppData.RegisterUser(RegUser.Username, RegUser.Password, RegUser.Email, RegUser.FullName))
+                {
+                    DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             else
             {
-                MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Заполните все обязательные поля!", "Внимание",
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = false;
             this.Close();
         }
     }

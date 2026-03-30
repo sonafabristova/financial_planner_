@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace financial_planner.Models
 {
+    [Serializable]
     public class TransactionCategory
     {
         public int Id { get; set; }
@@ -10,7 +12,6 @@ namespace financial_planner.Models
         public TransactionType Type { get; set; }
         public string Icon { get; set; }
 
-        // Доходы
         public static TransactionCategory Salary => new TransactionCategory
         {
             Id = 1,
@@ -27,10 +28,33 @@ namespace financial_planner.Models
             Icon = "💻"
         };
 
-        // Расходы
-        public static TransactionCategory Products => new TransactionCategory
+        public static TransactionCategory Gifts => new TransactionCategory
         {
             Id = 3,
+            Name = "Подарки",
+            Type = TransactionType.Income,
+            Icon = "🎁"
+        };
+
+        public static TransactionCategory Investments => new TransactionCategory
+        {
+            Id = 4,
+            Name = "Инвестиции",
+            Type = TransactionType.Income,
+            Icon = "📈"
+        };
+
+        public static TransactionCategory OtherIncome => new TransactionCategory
+        {
+            Id = 5,
+            Name = "Другой доход",
+            Type = TransactionType.Income,
+            Icon = "📥"
+        };
+
+        public static TransactionCategory Products => new TransactionCategory
+        {
+            Id = 6,
             Name = "Продукты",
             Type = TransactionType.Expense,
             Icon = "🛒"
@@ -38,7 +62,7 @@ namespace financial_planner.Models
 
         public static TransactionCategory Transport => new TransactionCategory
         {
-            Id = 4,
+            Id = 7,
             Name = "Транспорт",
             Type = TransactionType.Expense,
             Icon = "🚗"
@@ -46,17 +70,34 @@ namespace financial_planner.Models
 
         public static TransactionCategory Utilities => new TransactionCategory
         {
-            Id = 5,
+            Id = 8,
             Name = "Коммунальные услуги",
             Type = TransactionType.Expense,
             Icon = "🏠"
+        };
+
+        public static TransactionCategory Entertainment => new TransactionCategory
+        {
+            Id = 9,
+            Name = "Развлечения",
+            Type = TransactionType.Expense,
+            Icon = "🎬"
+        };
+
+        public static TransactionCategory OtherExpense => new TransactionCategory
+        {
+            Id = 10,
+            Name = "Другой расход",
+            Type = TransactionType.Expense,
+            Icon = "📤"
         };
 
         public static List<TransactionCategory> GetAll()
         {
             return new List<TransactionCategory>
             {
-                Salary, Freelance, Products, Transport, Utilities
+                Salary, Freelance, Gifts, Investments, OtherIncome,
+                Products, Transport, Utilities, Entertainment, OtherExpense
             };
         }
 

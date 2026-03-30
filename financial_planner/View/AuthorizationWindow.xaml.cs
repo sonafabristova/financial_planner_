@@ -1,12 +1,11 @@
 ﻿using System.Windows;
 using financial_planner.Models;
-using financial_planner.View;
 
-namespace financial_planner.View 
+namespace financial_planner.View
 {
-    public partial class AutorizationWindow : Window
+    public partial class AuthorizationWindow : Window
     {
-        public AutorizationWindow()
+        public AuthorizationWindow()
         {
             InitializeComponent();
         }
@@ -42,6 +41,12 @@ namespace financial_planner.View
         {
             RegistrationWindow regWindow = new RegistrationWindow();
             regWindow.ShowDialog();
+
+            if (regWindow.DialogResult == true && regWindow.RegUser != null)
+            {
+                BoxLogin.Text = regWindow.RegUser.Username;
+                BoxPass.Password = regWindow.RegUser.Password;
+            }
         }
     }
 }

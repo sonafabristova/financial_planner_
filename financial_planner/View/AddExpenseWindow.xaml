@@ -1,0 +1,12 @@
+﻿<Window x:Class="financial_planner.View.AddExpenseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        WindowState="Maximized"
+        WindowStyle="None"
+        Title="Внесение расхода" Height="450" Width="800">
+
+    <Grid Cursor="">
+    
+    </Grid>
+</Window>

@@ -20,13 +20,9 @@ namespace financial_planner.View
             }
         }
 
-        private void UpdateStatistics()
+        public void UpdateStatistics()
         {
-            var account = AppData.GetUserAccount(AppData.CurrentUser.Id);
-            if (account != null)
-            {
-                MonthlyIncomeText.Text = $"{account.MonthlyIncome:N0} ₽";
-            }
+            MonthlyIncomeText.Text = $"{AppData.TotalIncome:N0} ₽";
 
             var activeGoals = AppData.GetUserGoals(AppData.CurrentUser.Id)
                 .Where(g => g.Status.Name == "Активна")
@@ -34,7 +30,7 @@ namespace financial_planner.View
             ActiveGoalsCountText.Text = activeGoals.ToString();
         }
 
-        private void LoadGoals()
+        public void LoadGoals()
         {
             var goals = AppData.GetUserGoals(AppData.CurrentUser.Id)
                 .Where(g => g.Status.Name == "Активна")
@@ -79,18 +75,31 @@ namespace financial_planner.View
 
         private void ButtonAddIncome_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Открыть окно внесения дохода", "Внести доход",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            AddIncomeWindow addIncomeWindow = new AddIncomeWindow();
+            bool? result = addIncomeWindow.ShowDialog();
+
+            if (result == true)
+            {
+                UpdateStatistics();
+                LoadGoals();
+            }
         }
 
         private void ButtonAddExpense_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Открыть окно внесения расхода", "Внести расход",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            AddExpenseWindow addExpenseWindow = new AddExpenseWindow();
+            bool? result = addExpenseWindow.ShowDialog();
+
+            if (result == true)
+            {
+                UpdateStatistics();
+                LoadGoals();
+            }
         }
 
         private void ButtonExit_Click(object sender, RoutedEventArgs e)
         {
+            AppData.SaveAllData();
             Application.Current.Shutdown();
         }
     }

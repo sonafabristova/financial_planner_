@@ -7,30 +7,26 @@
     <Grid Background="#E3F2FD">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,50,130,10">
             <StackPanel Margin="5" Orientation="Horizontal">
-                <TextBox Width="150" Name="BoxLogin" Background="#FFFFFF" BorderBrush="#42A5F5"/>
-                <TextBlock Margin="10,5,0,0" Text="Логин" Foreground="#1976D2"/>
+                <TextBox Width="150" Name="BoxLogin" Background="White" BorderBrush="#42A5F5" FontSize="14"/>
+                <TextBlock Margin="10,5,0,0" Text="Логин" Foreground="#0D47A1" FontSize="14"/>
             </StackPanel>
             <StackPanel Margin="5" Orientation="Horizontal">
-                <PasswordBox Width="150" Name="BoxPass" Background="#FFFFFF" BorderBrush="#42A5F5"/>
-                <TextBlock Margin="10,5,0,0" Text="Пароль" Foreground="#1976D2"/>
+                <PasswordBox Width="150" Name="BoxPass" Background="White" BorderBrush="#42A5F5" FontSize="14"/>
+                <TextBlock Margin="10,5,0,0" Text="Пароль" Foreground="#0D47A1" FontSize="14"/>
             </StackPanel>
             <StackPanel Margin="5" Orientation="Horizontal">
-                <PasswordBox Width="150" Name="BoxConfirmPass" Background="#FFFFFF" BorderBrush="#42A5F5"/>
-                <TextBlock Margin="10,5,0,0" Text="Подтверждение" Foreground="#1976D2"/>
+                <TextBox Width="150" Name="BoxFullName" Background="White" BorderBrush="#42A5F5" FontSize="14"/>
+                <TextBlock Margin="10,5,0,0" Text="ФИО" Foreground="#0D47A1" FontSize="14"/>
             </StackPanel>
             <StackPanel Margin="5" Orientation="Horizontal">
-                <TextBox Width="150" Name="BoxFullName" Background="#FFFFFF" BorderBrush="#42A5F5"/>
-                <TextBlock Margin="10,5,0,0" Text="ФИО" Foreground="#1976D2"/>
-            </StackPanel>
-            <StackPanel Margin="5" Orientation="Horizontal">
-                <TextBox Width="150" Name="BoxEmail" Background="#FFFFFF" BorderBrush="#42A5F5"/>
-                <TextBlock Margin="10,5,0,0" Text="Email" Foreground="#1976D2"/>
+                <TextBox Width="150" Name="BoxEmail" Background="White" BorderBrush="#42A5F5" FontSize="14"/>
+                <TextBlock Margin="10,5,0,0" Text="Email" Foreground="#0D47A1" FontSize="14"/>
             </StackPanel>
             <StackPanel Margin="20,15,0,0" Orientation="Horizontal">
-                <Button Content="Создать аккаунт" Width="120" Height="25" 
-                        Name="ButtonCreateAccount" Click="ButtonCreateAccount_Click" 
+                <Button Content="Зарегистрироваться" Width="140" Height="30" 
+                        Name="ButtonRegister" Click="ButtonRegister_Click" 
                         Background="#42A5F5" Foreground="White" BorderThickness="0"/>
-                <Button Margin="10,0,0,0" Content="Отмена" Width="80" Height="25" 
+                <Button Margin="10,0,0,0" Content="Отмена" Width="80" Height="30" 
                         Name="ButtonCancel" Click="ButtonCancel_Click" 
                         Background="#90CAF9" Foreground="White" BorderThickness="0"/>
             </StackPanel>
@@ -38,7 +34,7 @@
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
             <TextBlock Text="РЕГИСТРАЦИЯ" Margin="10,100,150,10" 
-                       FontSize="25" FontWeight="DemiBold" Foreground="#0D47A1"/>
+                       FontSize="28" FontWeight="Bold" Foreground="#0D47A1"/>
         </StackPanel>
     </Grid>
 </Window>
