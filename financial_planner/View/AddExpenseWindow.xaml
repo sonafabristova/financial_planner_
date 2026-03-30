@@ -6,7 +6,98 @@
         WindowStyle="None"
         Title="Внесение расхода" Height="450" Width="800">
 
-    <Grid Cursor="">
-    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Background="#BBDEFB">
+            <StackPanel Margin="0,40,0,0">
+                <TextBlock Text="ФИНАНСЫ" FontSize="20" FontWeight="Bold" 
+                           Foreground="#0D47A1" HorizontalAlignment="Center" Margin="0,20,0,30"/>
+
+                <Button Content="Помощь" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonHelp_Click"/>
+
+                <Button Content="Внести доход" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonAddIncome_Click"/>
+
+                <Button Content="Мои цели" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonGoals_Click"/>
+
+                <Button Content="Новая цель" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonNewGoal_Click"/>
+
+                <Button Content="Назад" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonBack_Click"/>
+
+                <Button Content="Выйти" Height="45" Margin="15,5" 
+                        Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
+                        HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
+                        Click="ButtonExit_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1" Background="#E3F2FD" Margin="30,25,30,25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="ВНЕСЕНИЕ РАСХОДА" FontSize="22" FontWeight="SemiBold" 
+                       Foreground="#0D47A1" HorizontalAlignment="Center" Margin="0,0,0,25"/>
+
+            <StackPanel Grid.Row="1" Margin="50,0">
+
+                <TextBlock Text="Сумма расхода" FontSize="14" Foreground="#0D47A1" Margin="0,0,0,5"/>
+                <TextBox x:Name="AmountBox" Height="40" FontSize="14" Padding="10"
+                         Background="White" BorderBrush="#42A5F5" BorderThickness="1"/>
+
+                <TextBlock Text="Категория расхода" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
+                <ComboBox x:Name="CategoryBox" Height="40" FontSize="14" Padding="8"
+                          Background="White" BorderBrush="#42A5F5" BorderThickness="1">
+                    <ComboBoxItem Content="Продукты" IsSelected="True"/>
+                    <ComboBoxItem Content="Транспорт"/>
+                    <ComboBoxItem Content="Коммунальные услуги"/>
+                    <ComboBoxItem Content="Развлечения"/>
+                    <ComboBoxItem Content="Одежда"/>
+                    <ComboBoxItem Content="Здоровье"/>
+                    <ComboBoxItem Content="Другое"/>
+                </ComboBox>
+
+                <TextBlock Text="Заметки" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
+                <TextBox x:Name="NoteBox" Height="60" FontSize="14" Padding="10"
+                         Background="White" BorderBrush="#42A5F5" BorderThickness="1"
+                         TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <TextBlock Text="Дата" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
+                <DatePicker x:Name="DatePicker" Height="40" FontSize="14"
+                            Background="White" BorderBrush="#42A5F5" BorderThickness="1"
+                            SelectedDate="{x:Static sys:DateTime.Now}"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
+                    <Button Content="Сохранить" Width="120" Height="40"
+                            Background="#F44336" Foreground="White" BorderThickness="0"
+                            FontSize="14" FontWeight="SemiBold" Cursor="Hand"
+                            Click="ButtonSave_Click"/>
+                    <Button Content="Отмена" Width="100" Height="40" Margin="15,0,0,0"
+                            Background="#90A4AE" Foreground="White" BorderThickness="0"
+                            FontSize="14" FontWeight="SemiBold" Cursor="Hand"
+                            Click="ButtonCancel_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

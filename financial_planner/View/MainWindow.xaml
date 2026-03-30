@@ -4,50 +4,49 @@
         WindowState="Maximized"
         WindowStyle="None"
         Title="Финансовый планировщик" Height="450" Width="800">
-
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-
+        
         <Grid Grid.Column="0" Background="#BBDEFB">
             <StackPanel Margin="0,40,0,0">
-                <TextBlock Text=" ФИНАНСЫ" FontSize="20" FontWeight="Bold" 
+                <TextBlock Text="ФИНАНСЫ" FontSize="20" FontWeight="Bold" 
                            Foreground="#0D47A1" HorizontalAlignment="Center" Margin="0,20,0,30"/>
-
-                <Button Content=" Помощь" Height="45" Margin="15,5" 
+                
+                <Button Content="Помощь" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonHelp_Click"/>
-
-                <Button Content=" Мои цели" Height="45" Margin="15,5" 
+                
+                <Button Content="Мои цели" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonGoals_Click"/>
-
-                <Button Content=" Новая цель" Height="45" Margin="15,5" 
+                
+                <Button Content="Новая цель" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonNewGoal_Click"/>
-
+                
                 <Button Content="Распределение" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonDistribution_Click"/>
-
-                <Button Content=" Пополнить цель" Height="45" Margin="15,5" 
+                
+                <Button Content="Пополнить цель" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonTopUpGoal_Click"/>
-
-                <Button Content=" Выйти" Height="45" Margin="15,5" 
+                
+                <Button Content="Выйти" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
                         Click="ButtonExit_Click"/>
             </StackPanel>
         </Grid>
-
         
         <Grid Grid.Column="1" Background="#E3F2FD" Margin="20,25,25,25">
             <Grid.RowDefinitions>
@@ -56,8 +55,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
-           
+            
             <TextBlock Grid.Row="0" FontSize="22" FontWeight="SemiBold" 
                        Foreground="#0D47A1" Margin="0,0,0,15">
                 Добро пожаловать, 
@@ -65,54 +63,59 @@
                 <LineBreak/>
                 <Run Text="👋"/>
             </TextBlock>
-
-            <!-- Статистика -->
+            
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,25">
                 <Border Background="White" CornerRadius="16" Padding="20,15" 
                         Margin="0,0,15,0" Width="200">
                     <StackPanel>
-                        <TextBlock Text="📈 ДОХОД ЗА МЕСЯЦ" FontSize="11" 
-                                   Foreground="#78909C"/>
+                        <TextBlock Text="ДОХОД ЗА МЕСЯЦ" FontSize="11" Foreground="#78909C"/>
                         <TextBlock x:Name="MonthlyIncomeText" Text="0 ₽" 
                                    FontSize="28" FontWeight="Bold" Foreground="#2E7D32"
                                    Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
-
+                
+                <Border Background="White" CornerRadius="16" Padding="20,15" 
+                        Margin="0,0,15,0" Width="200">
+                    <StackPanel>
+                        <TextBlock Text="РАСХОД ЗА МЕСЯЦ" FontSize="11" Foreground="#78909C"/>
+                        <TextBlock x:Name="MonthlyExpensesText" Text="0 ₽" 
+                                   FontSize="28" FontWeight="Bold" Foreground="#F44336"
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+                
                 <Border Background="White" CornerRadius="16" Padding="20,15" Width="200">
                     <StackPanel>
-                        <TextBlock Text="🎯 АКТИВНЫХ ЦЕЛЕЙ" FontSize="11" 
-                                   Foreground="#78909C"/>
+                        <TextBlock Text="АКТИВНЫХ ЦЕЛЕЙ" FontSize="11" Foreground="#78909C"/>
                         <TextBlock x:Name="ActiveGoalsCountText" Text="0" 
                                    FontSize="32" FontWeight="Bold" Foreground="#0D47A1"
                                    Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
-
-            <!-- Кнопки -->
+            
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,20">
-                <Button Content="+ Внести доход" Width="150" Height="40"
+                <Button Content="Внести доход" Width="150" Height="40"
                         Background="#4CAF50" Foreground="White" BorderThickness="0"
                         FontSize="13" FontWeight="SemiBold" Cursor="Hand"
                         Click="ButtonAddIncome_Click"/>
-                <Button Content="- Внести расход" Width="150" Height="40" Margin="15,0,0,0"
+                <Button Content="Внести расход" Width="150" Height="40" Margin="15,0,0,0"
                         Background="#F44336" Foreground="White" BorderThickness="0"
                         FontSize="13" FontWeight="SemiBold" Cursor="Hand"
                         Click="ButtonAddExpense_Click"/>
             </StackPanel>
-
+            
             <StackPanel Grid.Row="3">
-                <TextBlock Text="⭐ АКТИВНЫЕ ЦЕЛИ" FontSize="14" FontWeight="SemiBold" 
+                <TextBlock Text="АКТИВНЫЕ ЦЕЛИ" FontSize="14" FontWeight="SemiBold" 
                            Foreground="#0D47A1" Margin="0,0,0,12"/>
-
-               
+                
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
                     <ItemsControl x:Name="GoalsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="White" CornerRadius="12" Padding="15,12" 
-                        Margin="0,0,0,8">
+                                        Margin="0,0,0,8">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -124,38 +127,33 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-
                                         
                                         <TextBlock Grid.Row="0" Grid.Column="0" 
-                                   Text="{Binding Name}" 
-                                   FontWeight="Bold" FontSize="15"
-                                   Foreground="#0D47A1"/>
-
-                                       
+                                                   Text="{Binding Name}" 
+                                                   FontWeight="Bold" FontSize="15"
+                                                   Foreground="#0D47A1"/>
+                                        
                                         <Border Grid.Row="0" Grid.Column="1" 
-                                Background="#E3F2FD" CornerRadius="10" 
-                                Padding="8,3">
+                                                Background="#E3F2FD" CornerRadius="10" 
+                                                Padding="8,3">
                                             <TextBlock Text="{Binding Status.Name}" 
-                                       FontSize="11" Foreground="#1976D2"/>
+                                                       FontSize="11" Foreground="#1976D2"/>
                                         </Border>
-
                                         
                                         <TextBlock Grid.Row="1" Grid.ColumnSpan="2" 
-                                   Text="{Binding ProgressText}" 
-                                   FontSize="12" Foreground="#5C6BC0"
-                                   Margin="0,8,0,5"/>
-
+                                                   Text="{Binding ProgressText}" 
+                                                   FontSize="12" Foreground="#5C6BC0"
+                                                   Margin="0,8,0,5"/>
                                         
                                         <ProgressBar Grid.Row="2" Grid.ColumnSpan="2" 
-                                     Value="{Binding Progress, Mode=OneWay}" 
-                                     Maximum="100" Height="6" 
-                                     Foreground="#42A5F5" Background="#E0E0E0"/>
-
+                                                     Value="{Binding Progress, Mode=OneWay}" 
+                                                     Maximum="100" Height="6" 
+                                                     Foreground="#42A5F5" Background="#E0E0E0"/>
                                         
                                         <TextBlock Grid.Row="3" Grid.ColumnSpan="2" 
-                                   Text="{Binding DisplayName}" 
-                                   FontSize="10" Foreground="#90A4AE"
-                                   Margin="0,10,0,0"/>
+                                                   Text="{Binding DisplayName}" 
+                                                   FontSize="10" Foreground="#90A4AE"
+                                                   Margin="0,10,0,0"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

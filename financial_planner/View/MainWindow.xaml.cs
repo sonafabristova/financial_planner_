@@ -14,7 +14,6 @@ namespace financial_planner.View
             if (AppData.CurrentUser != null)
             {
                 UserNameRun.Text = AppData.CurrentUser.FullName;
-
                 UpdateStatistics();
                 LoadGoals();
             }
@@ -22,7 +21,12 @@ namespace financial_planner.View
 
         public void UpdateStatistics()
         {
-            MonthlyIncomeText.Text = $"{AppData.TotalIncome:N0} ₽";
+            var account = AppData.GetUserAccount(AppData.CurrentUser.Id);
+            if (account != null)
+            {
+                MonthlyIncomeText.Text = $"{account.MonthlyIncome:N0} ₽";
+                MonthlyExpensesText.Text = $"{account.MonthlyExpenses:N0} ₽";
+            }
 
             var activeGoals = AppData.GetUserGoals(AppData.CurrentUser.Id)
                 .Where(g => g.Status.Name == "Активна")
@@ -35,7 +39,6 @@ namespace financial_planner.View
             var goals = AppData.GetUserGoals(AppData.CurrentUser.Id)
                 .Where(g => g.Status.Name == "Активна")
                 .ToList();
-
             GoalsList.ItemsSource = goals;
         }
 

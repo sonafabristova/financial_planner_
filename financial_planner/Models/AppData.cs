@@ -14,8 +14,6 @@ namespace financial_planner.Models
         public static List<Goal> Goals { get; set; } = new List<Goal>();
         public static List<Transaction> Transactions { get; set; } = new List<Transaction>();
 
-        public static decimal TotalIncome { get; set; } = 0;
-
         private static int _nextUserId = 1;
         private static int _nextAccountId = 1;
         private static int _nextGoalId = 1;
@@ -34,21 +32,29 @@ namespace financial_planner.Models
 
         public static void SaveAllData()
         {
+            string directory = Path.GetDirectoryName(_dataPath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             List<string> lines = new List<string>();
 
-          
             foreach (var user in Users)
             {
                 lines.Add($"USER|{user.Id}|{user.Username}|{user.Password}|{user.Email}|{user.FullName}|{user.RegistrationDate}");
             }
 
-        
             foreach (var acc in Accounts)
             {
                 lines.Add($"ACC|{acc.Id}|{acc.UserId}|{acc.CurrentBalance}|{acc.MonthlyIncome}|{acc.MonthlyExpenses}|{acc.LastUpdated}");
             }
 
-          
+            foreach (var goal in Goals)
+            {
+                lines.Add($"GOAL|{goal.Id}|{goal.UserId}|{goal.Name}|{goal.Description}|{goal.TargetAmount}|{goal.CurrentAmount}|{goal.Priority.Id}|{goal.Status.Id}|{goal.AllocationPercentage}|{goal.CreatedDate}|{goal.CompletedDate}");
+            }
+
             foreach (var t in Transactions)
             {
                 string typeName = t.Type == TransactionType.Income ? "Income" : "Expense";
@@ -56,10 +62,6 @@ namespace financial_planner.Models
                 lines.Add($"TRANS|{t.Id}|{t.UserId}|{typeName}|{t.Amount}|{categoryName}|{t.Date}|{t.Note}");
             }
 
-            
-            lines.Add($"TOTAL|{TotalIncome}");
-
-           
             lines.Add($"IDS|{_nextUserId}|{_nextAccountId}|{_nextGoalId}|{_nextTransactionId}");
 
             File.WriteAllLines(_dataPath, lines);
@@ -102,6 +104,33 @@ namespace financial_planner.Models
                                 LastUpdated = DateTime.Parse(parts[6])
                             });
                         }
+                        else if (parts[0] == "GOAL" && parts.Length == 12)
+                        {
+                            var goal = new Goal
+                            {
+                                Id = int.Parse(parts[1]),
+                                UserId = int.Parse(parts[2]),
+                                Name = parts[3],
+                                Description = parts[4],
+                                TargetAmount = decimal.Parse(parts[5]),
+                                CurrentAmount = decimal.Parse(parts[6]),
+                                AllocationPercentage = int.Parse(parts[9]),
+                                CreatedDate = DateTime.Parse(parts[10]),
+                                CompletedDate = string.IsNullOrEmpty(parts[11]) ? (DateTime?)null : DateTime.Parse(parts[11])
+                            };
+
+                            int priorityId = int.Parse(parts[7]);
+                            if (priorityId == 1) goal.Priority = Priority.Primary;
+                            else if (priorityId == 2) goal.Priority = Priority.Secondary;
+                            else goal.Priority = Priority.Residual;
+
+                            int statusId = int.Parse(parts[8]);
+                            if (statusId == 1) goal.Status = GoalStatus.Active;
+                            else if (statusId == 2) goal.Status = GoalStatus.Completed;
+                            else goal.Status = GoalStatus.Archived;
+
+                            Goals.Add(goal);
+                        }
                         else if (parts[0] == "TRANS" && parts.Length == 8)
                         {
                             var transaction = new Transaction
@@ -120,10 +149,6 @@ namespace financial_planner.Models
 
                             Transactions.Add(transaction);
                         }
-                        else if (parts[0] == "TOTAL" && parts.Length == 2)
-                        {
-                            TotalIncome = decimal.Parse(parts[1]);
-                        }
                         else if (parts[0] == "IDS" && parts.Length == 5)
                         {
                             _nextUserId = int.Parse(parts[1]);
@@ -132,12 +157,9 @@ namespace financial_planner.Models
                             _nextTransactionId = int.Parse(parts[4]);
                         }
                     }
-
-                    System.Diagnostics.Debug.WriteLine($"Загружено: {Users.Count} пользователей, {Transactions.Count} транзакций");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Diagnostics.Debug.WriteLine($"Ошибка загрузки: {ex.Message}");
                     CreateTestData();
                 }
             }
@@ -166,13 +188,11 @@ namespace financial_planner.Models
                 Id = _nextAccountId++,
                 UserId = testUser.Id,
                 CurrentBalance = 50000,
-                MonthlyIncome = 0,
-                MonthlyExpenses = 0,
+                MonthlyIncome = 80000,
+                MonthlyExpenses = 20000,
                 LastUpdated = DateTime.Now
             };
             Accounts.Add(testAccount);
-
-            TotalIncome = 80000;
 
             var incomeTransaction = new Transaction
             {
@@ -185,8 +205,6 @@ namespace financial_planner.Models
                 Note = "Зарплата за месяц"
             };
             Transactions.Add(incomeTransaction);
-            testAccount.CurrentBalance += incomeTransaction.Amount;
-            testAccount.MonthlyIncome = TotalIncome;
 
             var expenseTransaction1 = new Transaction
             {
@@ -199,8 +217,6 @@ namespace financial_planner.Models
                 Note = "Коммунальные услуги"
             };
             Transactions.Add(expenseTransaction1);
-            testAccount.CurrentBalance -= expenseTransaction1.Amount;
-            testAccount.MonthlyExpenses += expenseTransaction1.Amount;
 
             var expenseTransaction2 = new Transaction
             {
@@ -213,8 +229,6 @@ namespace financial_planner.Models
                 Note = "Продукты"
             };
             Transactions.Add(expenseTransaction2);
-            testAccount.CurrentBalance -= expenseTransaction2.Amount;
-            testAccount.MonthlyExpenses += expenseTransaction2.Amount;
 
             var testGoals = new List<Goal>
             {
@@ -324,18 +338,13 @@ namespace financial_planner.Models
             transaction.Id = _nextTransactionId++;
             Transactions.Add(transaction);
 
-            if (transaction.Type.Id == TransactionType.Income.Id)
-            {
-                TotalIncome += transaction.Amount;
-            }
-
             var account = GetUserAccount(transaction.UserId);
             if (account != null)
             {
                 if (transaction.Type.Id == TransactionType.Income.Id)
                 {
                     account.CurrentBalance += transaction.Amount;
-                    account.MonthlyIncome = TotalIncome;
+                    account.MonthlyIncome += transaction.Amount;
                 }
                 else
                 {
