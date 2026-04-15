@@ -54,26 +54,67 @@ namespace financial_planner.View
 
         private void ButtonGoals_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Открыть список всех целей", "Мои цели",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void ButtonNewGoal_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Открыть окно создания новой цели", "Новая цель",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MyGoalsWindow myGoalsWindow = new MyGoalsWindow();
+            myGoalsWindow.Show();
+            this.Close();
         }
 
         private void ButtonDistribution_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Открыть окно распределения средств", "Распределение",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            DistributionWindow distributionWindow = new DistributionWindow();
+            bool? result = distributionWindow.ShowDialog();
+
+            if (result == true)
+            {
+                UpdateStatistics();
+                LoadGoals();
+            }
         }
 
         private void ButtonTopUpGoal_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Открыть окно пополнения цели", "Пополнить цель",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            // Получаем все активные цели пользователя
+            var activeGoals = AppData.GetUserGoals(AppData.CurrentUser.Id)
+                .Where(g => g.Status.Name == "Активна")
+                .ToList();
+
+            if (!activeGoals.Any())
+            {
+                MessageBox.Show("У вас нет активных целей для пополнения.\nСначала создайте цель.",
+                              "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Если есть только одна цель, сразу открываем окно пополнения
+            if (activeGoals.Count == 1)
+            {
+                var topUpWindow = new TopUpGoalWindow(activeGoals.First());
+                bool? result = topUpWindow.ShowDialog();
+
+                if (result == true)
+                {
+                    UpdateStatistics();
+                    LoadGoals();
+                }
+            }
+            else
+            {
+                // Если целей несколько, показываем список для выбора
+                var selectionWindow = new GoalSelectionWindow(activeGoals);
+                bool? result = selectionWindow.ShowDialog();
+
+                if (result == true && selectionWindow.SelectedGoal != null)
+                {
+                    var topUpWindow = new TopUpGoalWindow(selectionWindow.SelectedGoal);
+                    bool? topUpResult = topUpWindow.ShowDialog();
+
+                    if (topUpResult == true)
+                    {
+                        UpdateStatistics();
+                        LoadGoals();
+                    }
+                }
+            }
         }
 
         private void ButtonAddIncome_Click(object sender, RoutedEventArgs e)
@@ -92,6 +133,18 @@ namespace financial_planner.View
         {
             AddExpenseWindow addExpenseWindow = new AddExpenseWindow();
             bool? result = addExpenseWindow.ShowDialog();
+
+            if (result == true)
+            {
+                UpdateStatistics();
+                LoadGoals();
+            }
+        }
+
+        private void ButtonNewGoal_Click(object sender, RoutedEventArgs e)
+        {
+            CreateGoalWindow createGoalWindow = new CreateGoalWindow();
+            bool? result = createGoalWindow.ShowDialog();
 
             if (result == true)
             {

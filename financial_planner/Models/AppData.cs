@@ -321,6 +321,32 @@ namespace financial_planner.Models
             return Accounts.FirstOrDefault(a => a.UserId == userId);
         }
 
+        public static void DeleteGoal(int goalId)
+        {
+            var goal = Goals.FirstOrDefault(g => g.Id == goalId);
+            if (goal != null)
+            {
+                Goals.Remove(goal);
+                SaveAllData();
+            }
+        }
+
+        public static void UpdateGoal(Goal updatedGoal)
+        {
+            var existingGoal = Goals.FirstOrDefault(g => g.Id == updatedGoal.Id);
+            if (existingGoal != null)
+            {
+                existingGoal.Name = updatedGoal.Name;
+                existingGoal.Description = updatedGoal.Description;
+                existingGoal.TargetAmount = updatedGoal.TargetAmount;
+                existingGoal.Priority = updatedGoal.Priority;
+                existingGoal.Status = updatedGoal.Status;
+                existingGoal.AllocationPercentage = updatedGoal.AllocationPercentage;
+                existingGoal.CompletedDate = updatedGoal.CompletedDate;
+
+                SaveAllData();
+            }
+        }
         public static List<Goal> GetUserGoals(int userId)
         {
             return Goals.Where(g => g.UserId == userId).ToList();

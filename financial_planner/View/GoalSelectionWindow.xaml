@@ -1,0 +1,56 @@
+﻿<Window x:Class="financial_planner.View.GoalSelectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Выберите цель" 
+        Height="650" 
+        Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <Grid Background="#E3F2FD">
+        <StackPanel Margin="20">
+            <TextBlock Text="ВЫБЕРИТЕ ЦЕЛЬ ДЛЯ ПОПОЛНЕНИЯ" 
+                       FontSize="18" FontWeight="Bold" 
+                       Foreground="#0D47A1" HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+            <ListBox x:Name="GoalsListBox" 
+                     Height="250"
+                     Background="White" 
+                     BorderBrush="#42A5F5" 
+                     BorderThickness="1"
+                     SelectionChanged="GoalsListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="10" Margin="0,0,0,5">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name, Mode=OneWay}" 
+                                           FontWeight="Bold" FontSize="14"
+                                           Foreground="#0D47A1"/>
+                                <TextBlock FontSize="11" Foreground="#78909C">
+                                    Накоплено: <Run Text="{Binding CurrentAmount, Mode=OneWay, StringFormat={}{0:N0} ₽}"/>
+                                    из <Run Text="{Binding TargetAmount, Mode=OneWay, StringFormat={}{0:N0} ₽}"/>
+                                </TextBlock>
+                                <ProgressBar Value="{Binding Progress, Mode=OneWay}" 
+                                             Maximum="100" Height="5"
+                                             Foreground="#42A5F5" Background="#E0E0E0"
+                                             Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Button x:Name="OkButton" Content="Выбрать" Width="100" Height="35"
+                        Background="#4CAF50" Foreground="White" BorderThickness="0"
+                        FontSize="13" FontWeight="SemiBold" Cursor="Hand"
+                        IsEnabled="False" Click="OkButton_Click"/>
+                <Button Content="Отмена" Width="100" Height="35" Margin="10,0,0,0"
+                        Background="#90A4AE" Foreground="White" BorderThickness="0"
+                        FontSize="13" FontWeight="SemiBold" Cursor="Hand"
+                        Click="CancelButton_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
