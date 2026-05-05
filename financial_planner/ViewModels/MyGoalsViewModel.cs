@@ -85,9 +85,17 @@ namespace financial_planner.ViewModels
             ExitCommand = new RelayCommand(ExecuteExit);
             HelpCommand = new RelayCommand(ExecuteHelp);
 
+            AppData.DataChanged += OnDataChanged;
+
             LoadGoals();
         }
-
+        private void OnDataChanged()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                LoadGoals();
+            });
+        }
         public void LoadGoals()
         {
             var allGoals = AppData.GetUserGoals(_userId);

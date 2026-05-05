@@ -1,10 +1,14 @@
 ﻿<Window x:Class="financial_planner.View.AddExpenseWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:vm="clr-namespace:financial_planner.ViewModels"
         WindowState="Maximized"
         WindowStyle="None"
         Title="Внесение расхода" Height="450" Width="800">
+
+    <Window.DataContext>
+        <vm:AddExpenseViewModel/>
+    </Window.DataContext>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -12,6 +16,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- Левая панель навигации -->
         <Grid Grid.Column="0" Background="#BBDEFB">
             <StackPanel Margin="0,40,0,0">
                 <TextBlock Text="ФИНАНСЫ" FontSize="20" FontWeight="Bold" 
@@ -20,7 +25,7 @@
                 <Button Content="Помощь" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
                         HorizontalAlignment="Left" FontSize="14" Cursor="Hand"
-                        Click="ButtonHelp_Click"/>
+                        Command="{Binding HelpCommand}"/>
 
                 <Button Content="Внести доход" Height="45" Margin="15,5" 
                         Background="Transparent" Foreground="#0D47A1" BorderThickness="0"
@@ -49,9 +54,9 @@
             </StackPanel>
         </Grid>
 
+        <!-- Правая область: форма внесения расхода -->
         <Grid Grid.Column="1" Background="#E3F2FD" Margin="30,25,30,25">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -60,42 +65,46 @@
                        Foreground="#0D47A1" HorizontalAlignment="Center" Margin="0,0,0,25"/>
 
             <StackPanel Grid.Row="1" Margin="50,0">
-
                 <TextBlock Text="Сумма расхода" FontSize="14" Foreground="#0D47A1" Margin="0,0,0,5"/>
-                <TextBox x:Name="AmountBox" Height="40" FontSize="14" Padding="10"
+                <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" 
+                         Height="40" FontSize="14" Padding="10"
                          Background="White" BorderBrush="#42A5F5" BorderThickness="1"/>
 
                 <TextBlock Text="Категория расхода" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
-                <ComboBox x:Name="CategoryBox" Height="40" FontSize="14" Padding="8"
-                          Background="White" BorderBrush="#42A5F5" BorderThickness="1">
-                    <ComboBoxItem Content="Продукты" IsSelected="True"/>
-                    <ComboBoxItem Content="Транспорт"/>
-                    <ComboBoxItem Content="Коммунальные услуги"/>
-                    <ComboBoxItem Content="Развлечения"/>
-                    <ComboBoxItem Content="Одежда"/>
-                    <ComboBoxItem Content="Здоровье"/>
-                    <ComboBoxItem Content="Другое"/>
-                </ComboBox>
+                <ComboBox ItemsSource="{Binding ExpenseCategories}"
+                          SelectedItem="{Binding SelectedCategory}"
+                          DisplayMemberPath="Name"
+                          Height="40" FontSize="14" Padding="8"
+                          Background="White" BorderBrush="#42A5F5" BorderThickness="1"/>
 
                 <TextBlock Text="Заметки" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
-                <TextBox x:Name="NoteBox" Height="60" FontSize="14" Padding="10"
+                <TextBox Text="{Binding Note}" Height="60" FontSize="14" Padding="10"
                          Background="White" BorderBrush="#42A5F5" BorderThickness="1"
                          TextWrapping="Wrap" AcceptsReturn="True"/>
 
                 <TextBlock Text="Дата" FontSize="14" Foreground="#0D47A1" Margin="0,15,0,5"/>
-                <DatePicker x:Name="DatePicker" Height="40" FontSize="14"
-                            Background="White" BorderBrush="#42A5F5" BorderThickness="1"
-                            SelectedDate="{x:Static sys:DateTime.Now}"/>
+                <DatePicker SelectedDate="{Binding SelectedDate}" Height="40" FontSize="14"
+                            Background="White" BorderBrush="#42A5F5" BorderThickness="1"/>
+
+                <!-- Сообщение об ошибке -->
+                <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="Red" 
+                           Margin="0,10,0,0"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
                     <Button Content="Сохранить" Width="120" Height="40"
                             Background="#F44336" Foreground="White" BorderThickness="0"
                             FontSize="14" FontWeight="SemiBold" Cursor="Hand"
-                            Click="ButtonSave_Click"/>
+                            Command="{Binding SaveCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"/>
                     <Button Content="Отмена" Width="100" Height="40" Margin="15,0,0,0"
                             Background="#90A4AE" Foreground="White" BorderThickness="0"
                             FontSize="14" FontWeight="SemiBold" Cursor="Hand"
-                            Click="ButtonCancel_Click"/>
+                            Command="{Binding CancelCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"/>
+                    <Button Content="Архив" Width="100" Height="40" Margin="15,0,0,0"
+                            Background="#42A5F5" Foreground="White" BorderThickness="0"
+                            FontSize="14" FontWeight="SemiBold" Cursor="Hand"
+                            Command="{Binding ArchiveCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

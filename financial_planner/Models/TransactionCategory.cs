@@ -103,7 +103,8 @@ namespace financial_planner.Models
 
         public static List<TransactionCategory> GetIncomeCategories()
         {
-            return GetAll().Where(c => c.Type == TransactionType.Income).ToList();
+            var all = GetAll();
+            return all.Where(c => c.Type == TransactionType.Income).ToList();
         }
 
         public static List<TransactionCategory> GetExpenseCategories()

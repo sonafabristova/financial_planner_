@@ -357,7 +357,10 @@ namespace financial_planner.Models
             goal.Id = _nextGoalId++;
             Goals.Add(goal);
             SaveAllData();
+            DataChanged?.Invoke();
         }
+
+        public static event Action DataChanged;
 
         public static void AddTransaction(Transaction transaction)
         {
@@ -367,6 +370,12 @@ namespace financial_planner.Models
             var account = GetUserAccount(transaction.UserId);
             if (account != null)
             {
+                if (IsNewMonth(transaction.UserId, transaction.Date))
+                {
+                    account.MonthlyIncome = 0;
+                    account.MonthlyExpenses = 0;
+                }
+
                 if (transaction.Type.Id == TransactionType.Income.Id)
                 {
                     account.CurrentBalance += transaction.Amount;
@@ -381,6 +390,52 @@ namespace financial_planner.Models
             }
 
             SaveAllData();
+
+            // Вызываем событие после сохранения
+            DataChanged?.Invoke();
+        }
+
+        private static bool IsNewMonth(int userId, DateTime transactionDate)
+        {
+            // Находим последнюю транзакцию пользователя
+            var lastTransaction = Transactions
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.Date)
+                .FirstOrDefault();
+
+            if (lastTransaction == null)
+                return false;
+
+            System.Diagnostics.Debug.WriteLine($"Последняя: {lastTransaction.Date:yyyy-MM-dd}");
+            System.Diagnostics.Debug.WriteLine($"Новая: {transactionDate:yyyy-MM-dd}");
+
+            // Если новая дата ПОЗЖЕ по году или месяцу
+            if (transactionDate.Year > lastTransaction.Date.Year)
+            {
+                System.Diagnostics.Debug.WriteLine("-> НОВЫЙ ГОД!");
+                return true;
+            }
+
+            if (transactionDate.Year == lastTransaction.Date.Year &&
+                transactionDate.Month > lastTransaction.Date.Month)
+            {
+                System.Diagnostics.Debug.WriteLine("-> НОВЫЙ МЕСЯЦ!");
+                return true;
+            }
+
+            System.Diagnostics.Debug.WriteLine("-> ТОТ ЖЕ МЕСЯЦ");
+            return false;
+        }
+
+        
+        public static List<Transaction> GetUserTransactions(int userId)
+        {
+            return Transactions.Where(t => t.UserId == userId).ToList();
+        }
+
+        public static List<Transaction> GetUserTransactionsByType(int userId, TransactionType type)
+        {
+            return Transactions.Where(t => t.UserId == userId && t.Type.Id == type.Id).ToList();
         }
     }
 }
