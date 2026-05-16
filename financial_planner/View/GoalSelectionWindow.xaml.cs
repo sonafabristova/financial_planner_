@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using financial_planner.Models;
 
@@ -8,11 +7,13 @@ namespace financial_planner.View
     public partial class GoalSelectionWindow : Window
     {
         public Goal SelectedGoal { get; private set; }
+        private List<Goal> _goals;
 
         public GoalSelectionWindow(List<Goal> goals)
         {
             InitializeComponent();
-            GoalsListBox.ItemsSource = goals;
+            _goals = goals;
+            GoalsListBox.ItemsSource = _goals;
         }
 
         private void GoalsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

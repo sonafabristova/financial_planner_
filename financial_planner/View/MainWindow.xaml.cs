@@ -41,5 +41,5 @@ namespace financial_planner.View
             base.OnClosed(e);
             (_viewModel as MainViewModel)?.Cleanup();
         }
-    }
+    }// бэкап сделать бд и закинуть в проект, этот выбор повлияет на историю в будущем
 }

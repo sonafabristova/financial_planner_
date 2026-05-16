@@ -1,90 +1,124 @@
 ﻿<Window x:Class="financial_planner.View.TransactionArchiveWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:financial_planner.ViewModels"
         Title="Архив транзакций" 
         Height="600" 
         Width="800"
         WindowStartupLocation="CenterOwner">
 
+    <Window.DataContext>
+        <vm:TransactionArchiveViewModel/>
+    </Window.DataContext>
+
     <Grid Background="#E3F2FD">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Заголовок -->
-        <TextBlock Grid.Row="0" Text="АРХИВ ТРАНЗАКЦИЙ" 
-                   FontSize="22" FontWeight="Bold" 
-                   Foreground="#0D47A1" HorizontalAlignment="Center" 
-                   Margin="0,20,0,20"/>
+        <!-- Заголовок и итоги -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="15" Margin="15">
+            <StackPanel>
+                <TextBlock Text="АРХИВ ТРАНЗАКЦИЙ" FontSize="20" FontWeight="Bold" 
+                           Foreground="#0D47A1" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-        <!-- Вкладки -->
-        <TabControl Grid.Row="1" Margin="20,0,20,10" Height="40">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#E8F5E9" CornerRadius="8" Padding="10" Margin="0,0,5,0">
+                        <TextBlock Text="{Binding TotalIncomeText}" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#2E7D32" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="#FFEBEE" CornerRadius="8" Padding="10" Margin="5,0,0,0">
+                        <TextBlock Text="{Binding TotalExpenseText}" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#C62828" HorizontalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Вкладки с транзакциями -->
+        <TabControl Grid.Row="1" Margin="15,0,15,15">
             <TabItem Header="Доходы">
-                <ListBox x:Name="IncomeList" Margin="10" 
-                         Background="White" BorderBrush="#42A5F5" BorderThickness="1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding IncomeTransactions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10" Margin="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" Margin="0,0,10,0"/>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Category.Name}" FontWeight="Bold" Foreground="#0D47A1"/>
-                                        <TextBlock Text="{Binding Note}" FontSize="11" Foreground="#78909C"/>
-                                        <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" FontSize="10" Foreground="#90A4AE"/>
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding DisplayAmount}" 
-                                               FontSize="16" FontWeight="Bold"
-                                               Foreground="#4CAF50" VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" Margin="0,0,10,0"/>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Category.Name}" FontWeight="Bold" Foreground="#0D47A1"/>
+                                            <TextBlock Text="{Binding Note}" FontSize="11" Foreground="#78909C" 
+                                                       TextWrapping="Wrap" MaxWidth="400"/>
+                                            <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" 
+                                                       FontSize="10" Foreground="#90A4AE"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding DisplayAmount}" 
+                                                   FontSize="16" FontWeight="Bold"
+                                                   Foreground="#4CAF50" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem Header="Расходы">
-                <ListBox x:Name="ExpenseList" Margin="10" 
-                         Background="White" BorderBrush="#42A5F5" BorderThickness="1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding ExpenseTransactions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="10" Margin="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" Margin="0,0,10,0"/>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Category.Name}" FontWeight="Bold" Foreground="#0D47A1"/>
-                                        <TextBlock Text="{Binding Note}" FontSize="11" Foreground="#78909C"/>
-                                        <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" FontSize="10" Foreground="#90A4AE"/>
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding DisplayAmount}" 
-                                               FontSize="16" FontWeight="Bold"
-                                               Foreground="#F44336" VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" Margin="0,0,10,0"/>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Category.Name}" FontWeight="Bold" Foreground="#0D47A1"/>
+                                            <TextBlock Text="{Binding Note}" FontSize="11" Foreground="#78909C" 
+                                                       TextWrapping="Wrap" MaxWidth="400"/>
+                                            <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" 
+                                                       FontSize="10" Foreground="#90A4AE"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding DisplayAmount}" 
+                                                   FontSize="16" FontWeight="Bold"
+                                                   Foreground="#F44336" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 
         <!-- Кнопка закрытия -->
-        <Button Grid.Row="2" Content="Закрыть" Width="120" Height="35" 
-                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20"
+        <Button Content="Закрыть" Width="120" Height="35" 
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,15"
                 Background="#42A5F5" Foreground="White" BorderThickness="0"
                 FontSize="13" FontWeight="SemiBold" Cursor="Hand"
-                Click="ButtonClose_Click"/>
+                Command="{Binding CloseCommand}"
+                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"/>
     </Grid>
 </Window>

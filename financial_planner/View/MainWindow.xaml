@@ -16,7 +16,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Левая панель навигации -->
+        <!-- Левая панель -->
         <Grid Grid.Column="0" Background="#BBDEFB">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
