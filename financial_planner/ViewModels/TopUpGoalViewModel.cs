@@ -12,6 +12,7 @@ namespace financial_planner.ViewModels
         private Goal _goal;
         private decimal _amount;
         private string _errorMessage;
+        private DatabaseService _dbService;
 
         public Goal Goal
         {
@@ -51,13 +52,14 @@ namespace financial_planner.ViewModels
 
         public TopUpGoalViewModel(Goal goal)
         {
-            if (AppData.CurrentUser == null)
+            if (AppState.CurrentUser == null)
             {
                 throw new InvalidOperationException("Пользователь не авторизован");
             }
 
-            _userId = AppData.CurrentUser.Id;
+            _userId = AppState.CurrentUser.Id;
             _goal = goal ?? throw new ArgumentNullException(nameof(goal));
+            _dbService = DatabaseService.Instance;
 
             TopUpCommand = new RelayCommand(ExecuteTopUp, CanExecuteTopUp);
             CancelCommand = new RelayCommand(ExecuteCancel);
@@ -81,25 +83,22 @@ namespace financial_planner.ViewModels
                 var transaction = new Transaction
                 {
                     UserId = _userId,
-                    Type = TransactionType.Expense,
+                    CategoryId = 12, // Другой расход
                     Amount = Amount,
-                    Category = TransactionCategory.OtherExpense,
                     Date = DateTime.Now,
                     Note = $"Пополнение цели: {Goal.Name}"
                 };
-                AppData.AddTransaction(transaction);
+                _dbService.AddTransaction(transaction);
 
                 Goal.CurrentAmount += Amount;
 
                 if (Goal.CurrentAmount >= Goal.TargetAmount)
                 {
-                    Goal.Status = GoalStatus.Completed;
+                    Goal.StatusId = 2; // Выполнена
                     Goal.CompletedDate = DateTime.Now;
-                    MessageBox.Show($"Поздравляем! Цель '{Goal.Name}' достигнута!",
-                                  "Цель выполнена", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
-                AppData.UpdateGoal(Goal);
+                _dbService.UpdateGoal(Goal);
 
                 MessageBox.Show($"Цель '{Goal.Name}' пополнена на {Amount:N0} ₽",
                               "Успех", MessageBoxButton.OK, MessageBoxImage.Information);

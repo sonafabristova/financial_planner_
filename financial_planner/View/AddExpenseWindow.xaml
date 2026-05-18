@@ -86,9 +86,8 @@
                 <DatePicker SelectedDate="{Binding SelectedDate}" Height="40" FontSize="14"
                             Background="White" BorderBrush="#42A5F5" BorderThickness="1"/>
 
-                <!-- Сообщение об ошибке -->
                 <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="Red" 
-                           Margin="0,10,0,0"/>
+                           Margin="0,10,0,0" Visibility="{Binding ErrorMessage, TargetNullValue=Collapsed, FallbackValue=Collapsed}"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
                     <Button Content="Сохранить" Width="120" Height="40"

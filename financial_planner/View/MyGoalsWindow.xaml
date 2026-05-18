@@ -6,9 +6,7 @@
         WindowStyle="None"
         Title="Мои цели" Height="450" Width="800">
 
-    <Window.DataContext>
-        <vm:MyGoalsViewModel/>
-    </Window.DataContext>
+    
 
     <Grid>
         <Grid.ColumnDefinitions>

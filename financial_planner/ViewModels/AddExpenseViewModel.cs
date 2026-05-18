@@ -16,6 +16,7 @@ namespace financial_planner.ViewModels
         private DateTime _selectedDate;
         private string _note;
         private string _errorMessage;
+        private DatabaseService _dbService;
 
         public decimal Amount
         {
@@ -47,10 +48,8 @@ namespace financial_planner.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
-        // Список категорий расходов
         public List<TransactionCategory> ExpenseCategories { get; }
 
-        // Команды
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand HelpCommand { get; }
@@ -58,22 +57,12 @@ namespace financial_planner.ViewModels
 
         public AddExpenseViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
             _selectedDate = DateTime.Now;
+            _dbService = DatabaseService.Instance;
 
-            // Вручную создаём категории расходов
-            ExpenseCategories = new List<TransactionCategory>
-            {
-                TransactionCategory.Products,
-                TransactionCategory.Transport,
-                TransactionCategory.Utilities,
-                TransactionCategory.Entertainment,
-                new TransactionCategory { Id = 11, Name = "Одежда", Type = TransactionType.Expense, Icon = "👕" },
-                new TransactionCategory { Id = 12, Name = "Здоровье", Type = TransactionType.Expense, Icon = "💊" },
-                TransactionCategory.OtherExpense
-            };
-
-            SelectedCategory = ExpenseCategories.FirstOrDefault() ?? TransactionCategory.OtherExpense;
+            ExpenseCategories = _dbService.GetExpenseCategories();
+            SelectedCategory = ExpenseCategories.FirstOrDefault();
 
             SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
@@ -93,14 +82,13 @@ namespace financial_planner.ViewModels
                 var transaction = new Transaction
                 {
                     UserId = _userId,
-                    Type = TransactionType.Expense,
+                    CategoryId = SelectedCategory.Id,
                     Amount = Amount,
-                    Category = SelectedCategory,
                     Date = SelectedDate,
                     Note = Note ?? ""
                 };
 
-                AppData.AddTransaction(transaction);
+                _dbService.AddTransaction(transaction);
 
                 MessageBox.Show($"Расход в размере {Amount:N2} ₽ успешно добавлен", "Успех",
                               MessageBoxButton.OK, MessageBoxImage.Information);

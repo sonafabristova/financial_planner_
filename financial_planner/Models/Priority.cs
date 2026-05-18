@@ -1,21 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace financial_planner.Models
+namespace financial_planner.Models;
+
+public partial class Priority
 {
-    public class Priority
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
+    public int Id { get; set; }
 
-        public static Priority Primary => new Priority { Id = 1, Name = "Первичный" };
-        public static Priority Secondary => new Priority { Id = 2, Name = "Вторичный" };
-        public static Priority Residual => new Priority { Id = 3, Name = "Остаточный" };
+    public string Name { get; set; } = null!;
 
-        public static List<Priority> GetAll()
-        {
-            return new List<Priority> { Primary, Secondary, Residual };
-        }
-
-        public override string ToString() => Name;
-    }
+    public virtual ICollection<Goal> Goals { get; set; } = new List<Goal>();
 }

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using financial_planner.Models;
 
 namespace financial_planner.View
 {
@@ -38,7 +37,6 @@ namespace financial_planner.View
 
         private void ButtonExit_Click(object sender, RoutedEventArgs e)
         {
-            AppData.SaveAllData();
             Application.Current.Shutdown();
         }
     }

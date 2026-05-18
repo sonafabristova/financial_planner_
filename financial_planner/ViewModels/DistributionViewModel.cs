@@ -24,6 +24,7 @@ namespace financial_planner.ViewModels
         private ObservableCollection<DistributionItem> _distributionItems;
         private string _freeBalanceText;
         private bool _canApply;
+        private DatabaseService _dbService;
 
         public ObservableCollection<DistributionItem> DistributionItems
         {
@@ -55,9 +56,10 @@ namespace financial_planner.ViewModels
 
         public DistributionViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            _dbService = DatabaseService.Instance;
 
-            ApplyCommand = new RelayCommand(ExecuteApply, CanExecuteApply);
+            ApplyCommand = new RelayCommand(o => ExecuteApply(o), o => CanApply);
             CancelCommand = new RelayCommand(ExecuteCancel);
             HelpCommand = new RelayCommand(ExecuteHelp);
             AddIncomeCommand = new RelayCommand(ExecuteAddIncome);
@@ -70,11 +72,9 @@ namespace financial_planner.ViewModels
             CalculateDistribution();
         }
 
-        private bool CanExecuteApply(object parameter) => CanApply;
-
         public void CalculateDistribution()
         {
-            var account = AppData.GetUserAccount(_userId);
+            var account = _dbService.GetUserAccount(_userId);
             if (account == null)
             {
                 FreeBalanceText = "0 ₽";
@@ -83,7 +83,7 @@ namespace financial_planner.ViewModels
                 return;
             }
 
-            decimal freeBalance = account.FreeBalance;
+            decimal freeBalance = account.MonthlyIncome - account.MonthlyExpenses;
             FreeBalanceText = $"{freeBalance:N0} ₽";
 
             if (freeBalance <= 0)
@@ -93,20 +93,20 @@ namespace financial_planner.ViewModels
                 return;
             }
 
-            var activeGoals = AppData.GetUserGoals(_userId)
-                .Where(g => g.IsActive && g.Remaining > 0)
+            var activeGoals = _dbService.GetUserGoals(_userId)
+                .Where(g => g.StatusId == 1 && g.Remaining > 0)
                 .ToList();
 
             var distribution = new ObservableCollection<DistributionItem>();
             decimal remainingBalance = freeBalance;
 
-            var primaryGoals = activeGoals.Where(g => g.IsPrimary).ToList();
+            var primaryGoals = activeGoals.Where(g => g.PriorityId == 1).ToList();
             remainingBalance = DistributeByPriority(primaryGoals, remainingBalance, distribution);
 
-            var secondaryGoals = activeGoals.Where(g => g.IsSecondary).ToList();
+            var secondaryGoals = activeGoals.Where(g => g.PriorityId == 2).ToList();
             remainingBalance = DistributeByPriority(secondaryGoals, remainingBalance, distribution);
 
-            var residualGoals = activeGoals.Where(g => g.IsResidual).ToList();
+            var residualGoals = activeGoals.Where(g => g.PriorityId == 3).ToList();
             remainingBalance = DistributeByPriority(residualGoals, remainingBalance, distribution);
 
             DistributionItems = distribution;
@@ -141,8 +141,7 @@ namespace financial_planner.ViewModels
                 });
             }
 
-            decimal distributed = distribution.Where(d => goals.Any(g => g.Id == d.GoalId)).Sum(d => d.SuggestedAmount);
-            return availableAmount - distributed;
+            return availableAmount - distribution.Where(d => goals.Any(g => g.Id == d.GoalId)).Sum(d => d.SuggestedAmount);
         }
 
         private void ExecuteApply(object parameter)
@@ -161,29 +160,28 @@ namespace financial_planner.ViewModels
                 var transaction = new Transaction
                 {
                     UserId = _userId,
-                    Type = TransactionType.Expense,
+                    CategoryId = 12, // Другой расход
                     Amount = totalAmount,
-                    Category = TransactionCategory.OtherExpense,
                     Date = DateTime.Now,
                     Note = "Автораспределение средств по целям"
                 };
-                AppData.AddTransaction(transaction);
+                _dbService.AddTransaction(transaction);
             }
 
             foreach (var item in DistributionItems)
             {
-                var goal = AppData.Goals.FirstOrDefault(g => g.Id == item.GoalId);
+                var goal = _dbService.GetUserGoals(_userId).FirstOrDefault(g => g.Id == item.GoalId);
                 if (goal != null && item.SuggestedAmount > 0)
                 {
                     goal.CurrentAmount += item.SuggestedAmount;
 
                     if (goal.CurrentAmount >= goal.TargetAmount)
                     {
-                        goal.Status = GoalStatus.Completed;
+                        goal.StatusId = 2; // Выполнена
                         goal.CompletedDate = DateTime.Now;
                     }
 
-                    AppData.UpdateGoal(goal);
+                    _dbService.UpdateGoal(goal);
                 }
             }
 
@@ -251,7 +249,6 @@ namespace financial_planner.ViewModels
 
         private void ExecuteExit(object parameter)
         {
-            AppData.SaveAllData();
             Application.Current.Shutdown();
         }
     }

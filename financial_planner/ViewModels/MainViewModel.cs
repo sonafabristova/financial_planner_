@@ -16,6 +16,7 @@ namespace financial_planner.ViewModels
         private decimal _monthlyExpenses;
         private int _activeGoalsCount;
         private string _userName;
+        private DatabaseService _dbService;
 
         public ObservableCollection<Goal> ActiveGoals
         {
@@ -26,7 +27,13 @@ namespace financial_planner.ViewModels
         public decimal MonthlyIncome
         {
             get => _monthlyIncome;
-            set => SetProperty(ref _monthlyIncome, value);
+            set
+            {
+                if (SetProperty(ref _monthlyIncome, value))
+                {
+                    OnPropertyChanged(nameof(MonthlyIncomeText));
+                }
+            }
         }
 
         public string MonthlyIncomeText => $"{MonthlyIncome:N0} ₽";
@@ -34,7 +41,13 @@ namespace financial_planner.ViewModels
         public decimal MonthlyExpenses
         {
             get => _monthlyExpenses;
-            set => SetProperty(ref _monthlyExpenses, value);
+            set
+            {
+                if (SetProperty(ref _monthlyExpenses, value))
+                {
+                    OnPropertyChanged(nameof(MonthlyExpensesText));
+                }
+            }
         }
 
         public string MonthlyExpensesText => $"{MonthlyExpenses:N0} ₽";
@@ -51,7 +64,6 @@ namespace financial_planner.ViewModels
             set => SetProperty(ref _userName, value);
         }
 
-        // Команды
         public ICommand AddIncomeCommand { get; }
         public ICommand AddExpenseCommand { get; }
         public ICommand NewGoalCommand { get; }
@@ -65,8 +77,9 @@ namespace financial_planner.ViewModels
 
         public MainViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
-            UserName = AppData.CurrentUser?.FullName ?? "Пользователь";
+            _dbService = DatabaseService.Instance;
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            UserName = AppState.CurrentUser?.FullName ?? "Пользователь";
 
             AddIncomeCommand = new RelayCommand(ExecuteAddIncome);
             AddExpenseCommand = new RelayCommand(ExecuteAddExpense);
@@ -79,23 +92,27 @@ namespace financial_planner.ViewModels
             EditGoalCommand = new RelayCommand(ExecuteEditGoal);
             ResetMonthCommand = new RelayCommand(ExecuteResetMonth);
 
-            AppData.DataChanged += OnDataChanged;
+            DatabaseService.DataChanged += OnDataChanged;
 
             LoadData();
         }
+
         private void OnDataChanged()
         {
-            // Обновляем данные в UI потоке
+            System.Diagnostics.Debug.WriteLine("=== OnDataChanged СРАБОТАЛ ===");
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LoadData();
             });
         }
+
         public void LoadData()
         {
+            System.Diagnostics.Debug.WriteLine("=== LoadData ВЫЗВАН ===");
             LoadStatistics();
             LoadActiveGoals();
-            // Принудительно обновляем UI
+
+            // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ UI
             OnPropertyChanged(nameof(MonthlyIncomeText));
             OnPropertyChanged(nameof(MonthlyExpensesText));
             OnPropertyChanged(nameof(ActiveGoalsCount));
@@ -103,80 +120,49 @@ namespace financial_planner.ViewModels
 
         private void LoadStatistics()
         {
-            var account = AppData.GetUserAccount(_userId);
+            var account = _dbService.GetUserAccount(_userId);
             if (account != null)
             {
                 MonthlyIncome = account.MonthlyIncome;
                 MonthlyExpenses = account.MonthlyExpenses;
+                System.Diagnostics.Debug.WriteLine($"MonthlyIncome = {MonthlyIncome}, MonthlyExpenses = {MonthlyExpenses}");
             }
         }
 
         private void LoadActiveGoals()
         {
-            var goals = AppData.GetUserGoals(_userId)
-                .Where(g => g.IsActive)
-                .ToList();
-            ActiveGoals = new ObservableCollection<Goal>(goals);
+            var goals = _dbService.GetUserGoals(_userId);
+            ActiveGoals = new ObservableCollection<Goal>(goals.Where(g => g.StatusId == 1));
             ActiveGoalsCount = ActiveGoals.Count;
         }
+
         private void ExecuteAddIncome(object parameter)
         {
             var window = new View.AddIncomeWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadData();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteAddExpense(object parameter)
         {
             var window = new View.AddExpenseWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadData();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteNewGoal(object parameter)
         {
             var window = new View.CreateGoalWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadData();
-            }
+            window.ShowDialog();
         }
-        private void ExecuteResetMonth(object parameter)
-        {
-            var account = AppData.GetUserAccount(_userId);
-            if (account != null)
-            {
-                account.MonthlyIncome = 0;
-                account.MonthlyExpenses = 0;
-                AppData.SaveAllData();
-                LoadStatistics();
 
-                // Принудительно обновляем UI
-                OnPropertyChanged(nameof(MonthlyIncomeText));
-                OnPropertyChanged(nameof(MonthlyExpensesText));
-
-                MessageBox.Show("Статистика за месяц сброшена", "Успех",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
         private void ExecuteDistribution(object parameter)
         {
             var window = new View.DistributionWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadData();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteTopUpGoal(object parameter)
         {
-            var activeGoals = AppData.GetUserGoals(_userId)
-                .Where(g => g.IsActive)
-                .ToList();
+            var activeGoals = _dbService.GetUserGoals(_userId).Where(g => g.StatusId == 1).ToList();
 
             if (!activeGoals.Any())
             {
@@ -188,10 +174,7 @@ namespace financial_planner.ViewModels
             if (activeGoals.Count == 1)
             {
                 var window = new View.TopUpGoalWindow(activeGoals.First());
-                if (window.ShowDialog() == true)
-                {
-                    LoadData();
-                }
+                window.ShowDialog();
             }
             else
             {
@@ -199,10 +182,7 @@ namespace financial_planner.ViewModels
                 if (selectionWindow.ShowDialog() == true && selectionWindow.SelectedGoal != null)
                 {
                     var window = new View.TopUpGoalWindow(selectionWindow.SelectedGoal);
-                    if (window.ShowDialog() == true)
-                    {
-                        LoadData();
-                    }
+                    window.ShowDialog();
                 }
             }
         }
@@ -211,13 +191,12 @@ namespace financial_planner.ViewModels
         {
             var window = new View.MyGoalsWindow();
             window.Show();
-            Application.Current.Windows.OfType<View.MainWindow>().FirstOrDefault()?.Close();
+            (parameter as Window)?.Close();
         }
 
         private void ExecuteHelp(object parameter)
         {
-            MessageBox.Show(
-                "Помощь по программе:\n\n" +
+            MessageBox.Show("Помощь по программе:\n\n" +
                 "1. Вносите доходы и расходы\n" +
                 "2. Создавайте цели накопления\n" +
                 "3. Используйте 'Распределение средств' для автоматического накопления\n" +
@@ -228,7 +207,6 @@ namespace financial_planner.ViewModels
 
         private void ExecuteExit(object parameter)
         {
-            AppData.SaveAllData();
             Application.Current.Shutdown();
         }
 
@@ -238,11 +216,22 @@ namespace financial_planner.ViewModels
             {
                 var window = new View.GoalCardWindow(goal);
                 window.ShowDialog();
+                LoadData();
             }
         }
-        public void Cleanup()
+
+        private void ExecuteResetMonth(object parameter)
         {
-            AppData.DataChanged -= OnDataChanged;
+            var account = _dbService.GetUserAccount(_userId);
+            if (account != null)
+            {
+                account.MonthlyIncome = 0;
+                account.MonthlyExpenses = 0;
+                _dbService.UpdateAccount(account);
+                LoadData(); // Принудительное обновление
+                MessageBox.Show("Статистика за месяц сброшена", "Успех",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

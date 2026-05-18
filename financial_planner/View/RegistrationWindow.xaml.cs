@@ -1,15 +1,18 @@
 ﻿using System.Windows;
 using financial_planner.Models;
+using financial_planner.ViewModels;
 
 namespace financial_planner.View
 {
     public partial class RegistrationWindow : Window
     {
-        public User? RegUser { get; set; } = null;
+        private DatabaseService _dbService;
 
         public RegistrationWindow()
         {
             InitializeComponent();
+            DataContext = new RegistrationViewModel();
+            _dbService = DatabaseService.Instance;
         }
 
         private void ButtonRegister_Click(object sender, RoutedEventArgs e)
@@ -18,9 +21,8 @@ namespace financial_planner.View
                 !string.IsNullOrEmpty(BoxPass.Password) &&
                 !string.IsNullOrEmpty(BoxFullName.Text))
             {
-                RegUser = new User
+                var user = new User
                 {
-                    Id = AppData.Users.Count > 0 ? AppData.Users[AppData.Users.Count - 1].Id + 1 : 1,
                     Username = BoxLogin.Text,
                     Password = BoxPass.Password,
                     FullName = BoxFullName.Text,
@@ -28,9 +30,18 @@ namespace financial_planner.View
                     RegistrationDate = System.DateTime.Now
                 };
 
-                if (AppData.RegisterUser(RegUser.Username, RegUser.Password, RegUser.Email, RegUser.FullName))
+                var account = new Account
                 {
-                    DialogResult = true;
+                    CurrentBalance = 0,
+                    MonthlyIncome = 0,
+                    MonthlyExpenses = 0,
+                    LastUpdated = System.DateTime.Now
+                };
+
+                if (_dbService.RegisterUser(user, account))
+                {
+                    MessageBox.Show("Регистрация прошла успешно! Теперь вы можете войти.",
+                                  "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                     this.Close();
                 }
                 else
@@ -48,7 +59,6 @@ namespace financial_planner.View
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
             this.Close();
         }
     }

@@ -1,26 +1,31 @@
 ﻿using System.Windows;
 using financial_planner.Models;
+using financial_planner.ViewModels;
 
 namespace financial_planner.View
 {
     public partial class AuthorizationWindow : Window
     {
+        private DatabaseService _dbService;
+
         public AuthorizationWindow()
         {
             InitializeComponent();
+            DataContext = new AuthorizationViewModel();
+            _dbService = DatabaseService.Instance;
         }
 
         private void ButtonLogin_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(BoxLogin.Text) && !string.IsNullOrWhiteSpace(BoxPass.Password))
             {
-                var user = AppData.AuthenticateUser(BoxLogin.Text, BoxPass.Password);
+                var user = _dbService.AuthenticateUser(BoxLogin.Text, BoxPass.Password);
 
                 if (user != null)
                 {
-                    AppData.CurrentUser = user;
+                    AppState.CurrentUser = user;
 
-                    MainWindow mainWindow = new MainWindow();
+                    var mainWindow = new MainWindow();
                     mainWindow.Show();
                     this.Close();
                 }
@@ -39,14 +44,9 @@ namespace financial_planner.View
 
         private void ButtonRegister_Click(object sender, RoutedEventArgs e)
         {
-            RegistrationWindow regWindow = new RegistrationWindow();
+            var regWindow = new RegistrationWindow();
+            regWindow.Owner = this;
             regWindow.ShowDialog();
-
-            if (regWindow.DialogResult == true && regWindow.RegUser != null)
-            {
-                BoxLogin.Text = regWindow.RegUser.Username;
-                BoxPass.Password = regWindow.RegUser.Password;
-            }
         }
     }
 }

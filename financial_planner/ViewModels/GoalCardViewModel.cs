@@ -11,104 +11,35 @@ namespace financial_planner.ViewModels
     public class GoalCardViewModel : ViewModelBase
     {
         private Goal _goal;
-        private string _name;
-        private string _description;
-        private decimal _targetAmount;
-        private decimal _currentAmount;
-        private Priority _selectedPriority;
-        private GoalStatus _selectedStatus;
-        private int _allocationPercentage;
+        private DatabaseService _dbService;
         private string _errorMessage;
 
         public Goal Goal => _goal;
 
-        public string Name
-        {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
-
-        public string Description
-        {
-            get => _description;
-            set => SetProperty(ref _description, value);
-        }
-
-        public decimal TargetAmount
-        {
-            get => _targetAmount;
-            set
-            {
-                if (SetProperty(ref _targetAmount, value))
-                {
-                    OnPropertyChanged(nameof(TargetAmountText));
-                    OnPropertyChanged(nameof(RemainingText));
-                    OnPropertyChanged(nameof(Progress));
-                    OnPropertyChanged(nameof(ProgressText));
-                }
-            }
-        }
-
-        public string TargetAmountText => $"{TargetAmount:N0} ₽";
-
-        public decimal CurrentAmount
-        {
-            get => _currentAmount;
-            set
-            {
-                if (SetProperty(ref _currentAmount, value))
-                {
-                    OnPropertyChanged(nameof(CurrentAmountText));
-                    OnPropertyChanged(nameof(RemainingText));
-                    OnPropertyChanged(nameof(Progress));
-                    OnPropertyChanged(nameof(ProgressText));
-                }
-            }
-        }
-
-        public string CurrentAmountText => $"{CurrentAmount:N0} ₽";
-
-        public decimal Remaining => TargetAmount - CurrentAmount;
-        public string RemainingText => $"{Remaining:N0} ₽";
-
-        public double Progress => TargetAmount > 0 ? (double)(CurrentAmount / TargetAmount * 100) : 0;
-        public string ProgressText => $"{Progress:F1}%";
-
-        public Priority SelectedPriority
-        {
-            get => _selectedPriority;
-            set => SetProperty(ref _selectedPriority, value);
-        }
-
-        public GoalStatus SelectedStatus
-        {
-            get => _selectedStatus;
-            set => SetProperty(ref _selectedStatus, value);
-        }
-
-        public int AllocationPercentage
-        {
-            get => _allocationPercentage;
-            set => SetProperty(ref _allocationPercentage, value);
-        }
-
-        public string PercentageText => $"{AllocationPercentage}%";
-
-        public string PriorityName => SelectedPriority?.Name ?? "";
-        public string StatusName => SelectedStatus?.Name ?? "";
+        public string GoalName => _goal?.Name ?? "";
+        public string GoalDescription => _goal?.Description ?? "Нет описания";
+        public string PriorityName => _goal?.Priority?.Name ?? "";
+        public string StatusName => _goal?.Status?.Name ?? "";
+        public string PercentageText => $"{_goal?.AllocationPercentage ?? 0}%";
 
         public string StatusColor
         {
             get
             {
-                if (SelectedStatus?.Id == 1) return "#4CAF50";
-                if (SelectedStatus?.Id == 2) return "#2196F3";
+                if (_goal?.StatusId == 1) return "#4CAF50";
+                if (_goal?.StatusId == 2) return "#2196F3";
                 return "#9E9E9E";
             }
         }
 
-        public string CreatedDateText => Goal?.CreatedDate.ToString("dd.MM.yyyy HH:mm") ?? "";
-        public string CompletedDateText => Goal?.CompletedDate?.ToString("dd.MM.yyyy HH:mm") ?? "Ещё не выполнена";
+        public string TargetAmountText => $"{_goal?.TargetAmount:N0} ₽";
+        public string CurrentAmountText => $"{_goal?.CurrentAmount:N0} ₽";
+        public string RemainingText => $"{(_goal?.TargetAmount - _goal?.CurrentAmount ?? 0):N0} ₽";
+        public double Progress => _goal?.Progress ?? 0;
+        public string ProgressText => $"{Progress:F1}%";
+
+        public string CreatedDateText => _goal?.CreatedDate.ToString("dd.MM.yyyy") ?? "";
+        public string CompletedDateText => _goal?.CompletedDate?.ToString("dd.MM.yyyy") ?? "Ещё не выполнена";
 
         public string ErrorMessage
         {
@@ -116,83 +47,49 @@ namespace financial_planner.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
-        public List<Priority> Priorities { get; }
-        public List<GoalStatus> Statuses { get; }
+        public ICommand EditCommand { get; }
+        public ICommand CloseCommand { get; }
 
         public GoalCardViewModel(Goal goal)
         {
             _goal = goal;
-            Priorities = Priority.GetAll();
-            Statuses = GoalStatus.GetAll();
+            _dbService = DatabaseService.Instance;
 
-            LoadGoalData();
+            EditCommand = new RelayCommand(ExecuteEdit);
+            CloseCommand = new RelayCommand(ExecuteClose);
         }
 
-        private void LoadGoalData()
+        private void ExecuteEdit(object parameter)
         {
-            Name = Goal.Name;
-            Description = Goal.Description ?? "";
-            TargetAmount = Goal.TargetAmount;
-            CurrentAmount = Goal.CurrentAmount;
-            SelectedPriority = Goal.Priority;
-            SelectedStatus = Goal.Status;
-            AllocationPercentage = Goal.AllocationPercentage;
+            // TODO: EditGoalWindow будет добавлен позже
+            MessageBox.Show("Редактирование цели будет доступно в следующей версии", "Информация",
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // var editWindow = new View.EditGoalWindow(_goal);
+            // if (editWindow.ShowDialog() == true)
+            // {
+            //     _goal = _dbService.GetUserGoals(_goal.UserId).FirstOrDefault(g => g.Id == _goal.Id);
+            //     if (_goal != null)
+            //     {
+            //         OnPropertyChanged(nameof(GoalName));
+            //         OnPropertyChanged(nameof(GoalDescription));
+            //         OnPropertyChanged(nameof(PriorityName));
+            //         OnPropertyChanged(nameof(StatusName));
+            //         OnPropertyChanged(nameof(StatusColor));
+            //         OnPropertyChanged(nameof(PercentageText));
+            //         OnPropertyChanged(nameof(TargetAmountText));
+            //         OnPropertyChanged(nameof(CurrentAmountText));
+            //         OnPropertyChanged(nameof(RemainingText));
+            //         OnPropertyChanged(nameof(Progress));
+            //         OnPropertyChanged(nameof(ProgressText));
+            //         OnPropertyChanged(nameof(CompletedDateText));
+            //     }
+            // }
         }
 
-        public bool Save()
+        private void ExecuteClose(object parameter)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(Name))
-                {
-                    ErrorMessage = "Введите название цели";
-                    return false;
-                }
-
-                if (TargetAmount <= 0)
-                {
-                    ErrorMessage = "Целевая сумма должна быть больше 0";
-                    return false;
-                }
-
-                if (AllocationPercentage < 0 || AllocationPercentage > 100)
-                {
-                    ErrorMessage = "Процент должен быть от 0 до 100";
-                    return false;
-                }
-
-                Goal.Name = Name.Trim();
-                Goal.Description = Description?.Trim() ?? "";
-                Goal.TargetAmount = TargetAmount;
-                Goal.CurrentAmount = CurrentAmount;
-                Goal.Priority = SelectedPriority;
-                Goal.Status = SelectedStatus;
-                Goal.AllocationPercentage = AllocationPercentage;
-
-                if (SelectedStatus?.Id == 2 && Goal.CompletedDate == null)
-                    Goal.CompletedDate = DateTime.Now;
-                else if (SelectedStatus?.Id != 2)
-                    Goal.CompletedDate = null;
-
-                AppData.UpdateGoal(Goal);
-
-                MessageBox.Show("Цель успешно обновлена", "Успех",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
-
-                ErrorMessage = "";
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = $"Ошибка: {ex.Message}";
-                return false;
-            }
-        }
-
-        public void CancelEdit()
-        {
-            LoadGoalData();
-            ErrorMessage = "";
+            (parameter as Window)?.Close();
         }
     }
 }

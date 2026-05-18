@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using financial_planner.Models;
@@ -13,6 +14,7 @@ namespace financial_planner.ViewModels
         private ObservableCollection<Transaction> _expenseTransactions;
         private decimal _totalIncome;
         private decimal _totalExpense;
+        private DatabaseService _dbService;
 
         public ObservableCollection<Transaction> IncomeTransactions
         {
@@ -46,7 +48,8 @@ namespace financial_planner.ViewModels
 
         public TransactionArchiveViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            _dbService = DatabaseService.Instance;
             CloseCommand = new RelayCommand(ExecuteClose);
 
             LoadTransactions();
@@ -54,15 +57,13 @@ namespace financial_planner.ViewModels
 
         private void LoadTransactions()
         {
-            var allTransactions = AppData.GetUserTransactions(_userId)
-                .OrderByDescending(t => t.Date)
-                .ToList();
+            var allTransactions = _dbService.GetUserTransactions(_userId);
 
             IncomeTransactions = new ObservableCollection<Transaction>(
-                allTransactions.Where(t => t.Type.Id == TransactionType.Income.Id));
+                allTransactions.Where(t => t.Category.TypeId == 1));
 
             ExpenseTransactions = new ObservableCollection<Transaction>(
-                allTransactions.Where(t => t.Type.Id == TransactionType.Expense.Id));
+                allTransactions.Where(t => t.Category.TypeId == 2));
 
             TotalIncome = IncomeTransactions.Sum(t => t.Amount);
             TotalExpense = ExpenseTransactions.Sum(t => t.Amount);

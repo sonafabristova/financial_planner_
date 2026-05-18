@@ -6,7 +6,6 @@ using System.Windows.Input;
 using financial_planner.Models;
 using financial_planner.ViewModels.Base;
 
-
 namespace financial_planner.ViewModels
 {
     public class MyGoalsViewModel : ViewModelBase
@@ -17,6 +16,7 @@ namespace financial_planner.ViewModels
         private int _activeGoalsCount;
         private decimal _totalSaved;
         private decimal _totalTarget;
+        private DatabaseService _dbService;
 
         public ObservableCollection<Goal> Goals
         {
@@ -56,9 +56,8 @@ namespace financial_planner.ViewModels
             ? $"{(double)(TotalSaved / TotalTarget * 100):F1}%"
             : "0%";
 
-        public bool CanTopUp => SelectedGoal != null && SelectedGoal.IsActive;
+        public bool CanTopUp => SelectedGoal != null && SelectedGoal.StatusId == 1;
 
-        // Команды
         public ICommand AddIncomeCommand { get; }
         public ICommand AddExpenseCommand { get; }
         public ICommand NewGoalCommand { get; }
@@ -72,36 +71,35 @@ namespace financial_planner.ViewModels
 
         public MyGoalsViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            _dbService = DatabaseService.Instance;
 
-            AddIncomeCommand = new RelayCommand(ExecuteAddIncome);
-            AddExpenseCommand = new RelayCommand(ExecuteAddExpense);
-            NewGoalCommand = new RelayCommand(ExecuteNewGoal);
-            DistributionCommand = new RelayCommand(ExecuteDistribution);
-            TopUpGoalCommand = new RelayCommand(ExecuteTopUpGoal, p => CanTopUp);
-            EditGoalCommand = new RelayCommand(ExecuteEditGoal, p => SelectedGoal != null);  
-            DeleteGoalCommand = new RelayCommand(ExecuteDeleteGoal, p => SelectedGoal != null && !SelectedGoal.IsCompleted);
-            BackCommand = new RelayCommand(ExecuteBack);
-            ExitCommand = new RelayCommand(ExecuteExit);
-            HelpCommand = new RelayCommand(ExecuteHelp);
+            AddIncomeCommand = new RelayCommand(o => ExecuteAddIncome(o));
+            AddExpenseCommand = new RelayCommand(o => ExecuteAddExpense(o));
+            NewGoalCommand = new RelayCommand(o => ExecuteNewGoal(o));
+            DistributionCommand = new RelayCommand(o => ExecuteDistribution(o));
+            TopUpGoalCommand = new RelayCommand(o => ExecuteTopUpGoal(o), o => CanTopUp);
+            EditGoalCommand = new RelayCommand(o => ExecuteEditGoal(o), o => SelectedGoal != null);
+            DeleteGoalCommand = new RelayCommand(o => ExecuteDeleteGoal(o), o => SelectedGoal != null && SelectedGoal.StatusId != 2);
+            BackCommand = new RelayCommand(o => ExecuteBack(o));
+            ExitCommand = new RelayCommand(o => ExecuteExit(o));
+            HelpCommand = new RelayCommand(o => ExecuteHelp(o));
 
-            AppData.DataChanged += OnDataChanged;
-
+            DatabaseService.DataChanged += OnDataChanged;
             LoadGoals();
         }
+
         private void OnDataChanged()
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                LoadGoals();
-            });
+            Application.Current.Dispatcher.Invoke(() => LoadGoals());
         }
+
         public void LoadGoals()
         {
-            var allGoals = AppData.GetUserGoals(_userId);
+            var allGoals = _dbService.GetUserGoals(_userId);
             Goals = new ObservableCollection<Goal>(allGoals);
 
-            ActiveGoalsCount = Goals.Count(g => g.IsActive);
+            ActiveGoalsCount = Goals.Count(g => g.StatusId == 1);
             TotalSaved = Goals.Sum(g => g.CurrentAmount);
             TotalTarget = Goals.Sum(g => g.TargetAmount);
 
@@ -114,12 +112,9 @@ namespace financial_planner.ViewModels
             if (SelectedGoal == null) return;
 
             var window = new View.TopUpGoalWindow(SelectedGoal);
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
+            window.ShowDialog();
         }
+
         private void ExecuteEditGoal(object parameter)
         {
             var goal = parameter as Goal ?? SelectedGoal;
@@ -127,18 +122,6 @@ namespace financial_planner.ViewModels
 
             var window = new View.GoalCardWindow(goal);
             window.ShowDialog();
-        }
-        private void ExecuteCreateGoal(object parameter)
-        {
-            var goal = parameter as Goal ?? SelectedGoal;
-            if (goal == null) return;
-
-            var window = new View.CreateGoalWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
         }
 
         private void ExecuteDeleteGoal(object parameter)
@@ -153,10 +136,7 @@ namespace financial_planner.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
-                AppData.DeleteGoal(SelectedGoal.Id);
-                LoadGoals();
-                NotifyMainWindowUpdate();
-
+                _dbService.DeleteGoal(SelectedGoal.Id);
                 MessageBox.Show("Цель успешно удалена", "Успех",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -165,41 +145,25 @@ namespace financial_planner.ViewModels
         private void ExecuteAddIncome(object parameter)
         {
             var window = new View.AddIncomeWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteAddExpense(object parameter)
         {
             var window = new View.AddExpenseWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteNewGoal(object parameter)
         {
             var window = new View.CreateGoalWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteDistribution(object parameter)
         {
             var window = new View.DistributionWindow();
-            if (window.ShowDialog() == true)
-            {
-                LoadGoals();
-                NotifyMainWindowUpdate();
-            }
+            window.ShowDialog();
         }
 
         private void ExecuteBack(object parameter)
@@ -211,7 +175,6 @@ namespace financial_planner.ViewModels
 
         private void ExecuteExit(object parameter)
         {
-            AppData.SaveAllData();
             Application.Current.Shutdown();
         }
 
@@ -219,25 +182,11 @@ namespace financial_planner.ViewModels
         {
             MessageBox.Show(
                 "Окно 'Мои цели':\n\n" +
-                "• Двойной клик - редактирование цели\n" +
+                "• Двойной клик - просмотр карточки цели\n" +
                 "• Выберите цель и нажмите 'Внести сумму в накопления' для ручного пополнения\n" +
                 "• 'Распределение средств' - автоматическое распределение\n" +
                 "• Выполненные цели удалить нельзя",
-                "Помощь",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-
-        private void NotifyMainWindowUpdate()
-        {
-            foreach (Window window in Application.Current.Windows)
-            {
-                if (window is View.MainWindow mainWindow)
-                {
-                    mainWindow.UpdateStatistics();
-                    mainWindow.LoadGoals();
-                }
-            }
+                "Помощь", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

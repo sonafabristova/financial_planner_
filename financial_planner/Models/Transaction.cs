@@ -1,22 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace financial_planner.Models
+namespace financial_planner.Models;
+
+public partial class Transaction
 {
-    public class Transaction
-    {
-        public int Id { get; set; }
-        public int UserId { get; set; }
-        public TransactionType Type { get; set; }
-        public TransactionCategory Category { get; set; }
-        public decimal Amount { get; set; }
-        public DateTime Date { get; set; }
-        public string Note { get; set; }
+    public int Id { get; set; }
 
-        public string DisplayAmount => Type == TransactionType.Income
-            ? $"+{Amount:N0}"
-            : $"-{Amount:N0}";
+    public int UserId { get; set; }
 
-        public string DisplayColor => Type?.Color ?? "#000000";
-        public string Icon => Category?.Icon ?? "📝";
-    }
+    public int CategoryId { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public DateTime Date { get; set; }
+
+    public string? Note { get; set; }
+
+    public virtual TransactionCategory Category { get; set; } = null!;
+
+    public virtual User User { get; set; } = null!;
 }

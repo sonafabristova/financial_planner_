@@ -9,8 +9,10 @@ namespace financial_planner.ViewModels
 {
     public class GoalSelectionViewModel : ViewModelBase
     {
+        private readonly int _userId;
         private ObservableCollection<Goal> _goals;
         private Goal _selectedGoal;
+        private DatabaseService _dbService;
 
         public ObservableCollection<Goal> Goals
         {
@@ -33,20 +35,16 @@ namespace financial_planner.ViewModels
         public ICommand SelectCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public GoalSelectionViewModel()
+        public GoalSelectionViewModel(System.Collections.Generic.List<Goal> goals)
         {
-            Goals = new ObservableCollection<Goal>();
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            _dbService = DatabaseService.Instance;
 
-            SelectCommand = new RelayCommand(ExecuteSelect, CanExecuteSelect);
+            Goals = new ObservableCollection<Goal>(goals);
+
+            SelectCommand = new RelayCommand(o => ExecuteSelect(o), o => CanSelect);
             CancelCommand = new RelayCommand(ExecuteCancel);
         }
-
-        public void SetGoals(System.Collections.Generic.List<Goal> goals)
-        {
-            Goals = new ObservableCollection<Goal>(goals);
-        }
-
-        private bool CanExecuteSelect(object parameter) => CanSelect;
 
         private void ExecuteSelect(object parameter)
         {

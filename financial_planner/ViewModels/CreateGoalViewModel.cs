@@ -17,6 +17,7 @@ namespace financial_planner.ViewModels
         private Priority _selectedPriority;
         private int _allocationPercentage;
         private string _errorMessage;
+        private DatabaseService _dbService;
 
         public string Name
         {
@@ -74,9 +75,10 @@ namespace financial_planner.ViewModels
 
         public CreateGoalViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
+            _dbService = DatabaseService.Instance;
 
-            Priorities = Priority.GetAll();
+            Priorities = _dbService.GetPriorities();
             SelectedPriority = Priorities.FirstOrDefault();
 
             CreateCommand = new RelayCommand(ExecuteCreate, CanExecuteCreate);
@@ -102,8 +104,8 @@ namespace financial_planner.ViewModels
                 return;
             }
 
-            var existingGoals = AppData.GetUserGoals(_userId)
-                .Where(g => g.IsActive && g.Priority.Id == SelectedPriority.Id)
+            var existingGoals = _dbService.GetUserGoals(_userId)
+                .Where(g => g.StatusId == 1 && g.PriorityId == SelectedPriority.Id)
                 .ToList();
 
             int totalPercentage = existingGoals.Sum(g => g.AllocationPercentage) + AllocationPercentage;
@@ -129,13 +131,14 @@ namespace financial_planner.ViewModels
                     Description = Description?.Trim() ?? "",
                     TargetAmount = TargetAmount,
                     CurrentAmount = 0,
-                    Priority = SelectedPriority,
-                    Status = GoalStatus.Active,
+                    PriorityId = SelectedPriority.Id,
+                    StatusId = 1, // Активна
                     AllocationPercentage = AllocationPercentage,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    CompletedDate = null
                 };
 
-                AppData.AddGoal(goal);
+                _dbService.AddGoal(goal);
 
                 MessageBox.Show($"Цель \"{goal.Name}\" успешно создана!", "Успех",
                               MessageBoxButton.OK, MessageBoxImage.Information);
@@ -158,10 +161,7 @@ namespace financial_planner.ViewModels
             MessageBox.Show("Создание цели накопления:\n\n" +
                 "1. Введите название и описание цели\n" +
                 "2. Укажите целевую сумму\n" +
-                "3. Выберите приоритет:\n" +
-                "   - Первичный: деньги распределяются в первую очередь\n" +
-                "   - Вторичный: распределяются после первичных\n" +
-                "   - Остаточный: распределяются в последнюю очередь\n" +
+                "3. Выберите приоритет\n" +
                 "4. Укажите процент от свободных средств\n" +
                 "Важно: сумма процентов в одном приоритете не должна превышать 100%",
                 "Помощь", MessageBoxButton.OK, MessageBoxImage.Information);

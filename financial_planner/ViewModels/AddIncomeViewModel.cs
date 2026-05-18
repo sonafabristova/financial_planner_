@@ -17,6 +17,7 @@ namespace financial_planner.ViewModels
         private DateTime _selectedDate;
         private string _note;
         private string _errorMessage;
+        private DatabaseService _dbService;
 
         public decimal Amount
         {
@@ -71,20 +72,12 @@ namespace financial_planner.ViewModels
 
         public AddIncomeViewModel()
         {
-            _userId = AppData.CurrentUser?.Id ?? 0;
+            _userId = AppState.CurrentUser?.Id ?? 0;
             _selectedDate = DateTime.Now;
+            _dbService = DatabaseService.Instance;
 
-            // Вручную создаём категории доходов
-            IncomeCategories = new List<TransactionCategory>
-            {
-                TransactionCategory.Salary,
-                TransactionCategory.Freelance,
-                TransactionCategory.Gifts,
-                TransactionCategory.Investments,
-                TransactionCategory.OtherIncome
-            };
-
-            SelectedCategory = IncomeCategories.FirstOrDefault() ?? TransactionCategory.OtherIncome;
+            IncomeCategories = _dbService.GetIncomeCategories();
+            SelectedCategory = IncomeCategories.FirstOrDefault();
 
             SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
@@ -110,17 +103,23 @@ namespace financial_planner.ViewModels
                 var transaction = new Transaction
                 {
                     UserId = _userId,
-                    Type = TransactionType.Income,
+                    CategoryId = SelectedCategory.Id,
                     Amount = Amount,
-                    Category = SelectedCategory,
                     Date = SelectedDate,
                     Note = Note ?? ""
                 };
 
-                AppData.AddTransaction(transaction);
+                _dbService.AddTransaction(transaction);
 
                 MessageBox.Show($"Доход в размере {Amount:N2} ₽ успешно добавлен", "Успех",
                               MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ГЛАВНОГО ОКНА
+                var mainWindow = Application.Current.Windows.OfType<View.MainWindow>().FirstOrDefault();
+                if (mainWindow?.DataContext is MainViewModel vm)
+                {
+                    vm.LoadData();
+                }
 
                 (parameter as Window)?.Close();
             }

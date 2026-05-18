@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
 using financial_planner.Models;
 using financial_planner.ViewModels.Base;
@@ -13,6 +14,7 @@ namespace financial_planner.ViewModels
         private string _email;
         private string _fullName;
         private string _errorMessage;
+        private DatabaseService _dbService;
 
         public string Username
         {
@@ -55,6 +57,7 @@ namespace financial_planner.ViewModels
 
         public RegistrationViewModel()
         {
+            _dbService = DatabaseService.Instance;
             RegisterCommand = new RelayCommand(ExecuteRegister, CanExecuteRegister);
             CancelCommand = new RelayCommand(ExecuteCancel);
         }
@@ -70,14 +73,30 @@ namespace financial_planner.ViewModels
 
         private void ExecuteRegister(object parameter)
         {
-            
             if (!string.IsNullOrEmpty(Email) && !Email.Contains("@"))
             {
                 ErrorMessage = "Введите корректный email";
                 return;
             }
 
-            bool success = AppData.RegisterUser(Username, Password, Email, FullName);
+            var user = new User
+            {
+                Username = Username,
+                Password = Password,
+                Email = Email,
+                FullName = FullName,
+                RegistrationDate = DateTime.Now
+            };
+
+            var account = new Account
+            {
+                CurrentBalance = 0,
+                MonthlyIncome = 0,
+                MonthlyExpenses = 0,
+                LastUpdated = DateTime.Now
+            };
+
+            bool success = _dbService.RegisterUser(user, account);
 
             if (success)
             {
