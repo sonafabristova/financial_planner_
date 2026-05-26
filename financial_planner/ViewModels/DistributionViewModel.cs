@@ -59,7 +59,7 @@ namespace financial_planner.ViewModels
             _userId = AppState.CurrentUser?.Id ?? 0;
             _dbService = DatabaseService.Instance;
 
-            ApplyCommand = new RelayCommand(o => ExecuteApply(o), o => CanApply);
+            ApplyCommand = new RelayCommand(ExecuteApply, o => CanApply);
             CancelCommand = new RelayCommand(ExecuteCancel);
             HelpCommand = new RelayCommand(ExecuteHelp);
             AddIncomeCommand = new RelayCommand(ExecuteAddIncome);
@@ -96,6 +96,13 @@ namespace financial_planner.ViewModels
             var activeGoals = _dbService.GetUserGoals(_userId)
                 .Where(g => g.StatusId == 1 && g.Remaining > 0)
                 .ToList();
+
+            if (!activeGoals.Any())
+            {
+                DistributionItems = new ObservableCollection<DistributionItem>();
+                CanApply = false;
+                return;
+            }
 
             var distribution = new ObservableCollection<DistributionItem>();
             decimal remainingBalance = freeBalance;
@@ -134,7 +141,7 @@ namespace financial_planner.ViewModels
                 {
                     GoalId = goal.Id,
                     GoalName = goal.Name,
-                    PriorityName = goal.Priority.Name,
+                    PriorityName = goal.Priority?.Name ?? "Неизвестно",
                     Percentage = goal.AllocationPercentage,
                     SuggestedAmount = suggestedAmount,
                     Remaining = goal.Remaining
@@ -155,7 +162,14 @@ namespace financial_planner.ViewModels
 
             decimal totalAmount = DistributionItems.Sum(d => d.SuggestedAmount);
 
-            if (totalAmount > 0)
+            if (totalAmount <= 0)
+            {
+                MessageBox.Show("Нет средств для распределения", "Внимание",
+                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
             {
                 var transaction = new Transaction
                 {
@@ -166,29 +180,36 @@ namespace financial_planner.ViewModels
                     Note = "Автораспределение средств по целям"
                 };
                 _dbService.AddTransaction(transaction);
-            }
 
-            foreach (var item in DistributionItems)
-            {
-                var goal = _dbService.GetUserGoals(_userId).FirstOrDefault(g => g.Id == item.GoalId);
-                if (goal != null && item.SuggestedAmount > 0)
+                foreach (var item in DistributionItems)
                 {
-                    goal.CurrentAmount += item.SuggestedAmount;
+                    if (item.SuggestedAmount <= 0) continue;
 
-                    if (goal.CurrentAmount >= goal.TargetAmount)
+                    var goal = _dbService.GetUserGoals(_userId).FirstOrDefault(g => g.Id == item.GoalId);
+                    if (goal != null)
                     {
-                        goal.StatusId = 2; // Выполнена
-                        goal.CompletedDate = DateTime.Now;
+                        goal.CurrentAmount += item.SuggestedAmount;
+
+                        if (goal.CurrentAmount >= goal.TargetAmount)
+                        {
+                            goal.StatusId = 2; // Выполнена
+                            goal.CompletedDate = DateTime.Now;
+                        }
+
+                        _dbService.UpdateGoal(goal);
                     }
-
-                    _dbService.UpdateGoal(goal);
                 }
+
+                MessageBox.Show($"Средства успешно распределены!\nВсего направлено: {totalAmount:N0} ₽",
+                              "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                (parameter as Window)?.Close();
             }
-
-            MessageBox.Show($"Средства успешно распределены!\nВсего направлено: {totalAmount:N0} ₽",
-                          "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            (parameter as Window)?.Close();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ExecuteCancel(object parameter)

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using financial_planner.ViewModels;
 
 namespace financial_planner.View
 {
@@ -7,6 +8,7 @@ namespace financial_planner.View
         public DistributionWindow()
         {
             InitializeComponent();
+            DataContext = new DistributionViewModel();
         }
     }
 }

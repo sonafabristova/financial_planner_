@@ -67,7 +67,7 @@ namespace financial_planner.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
-        public List<Priority> Priorities { get; }
+        public List<Priority> Priorities { get; set; }
 
         public ICommand CreateCommand { get; }
         public ICommand CancelCommand { get; }
@@ -78,6 +78,7 @@ namespace financial_planner.ViewModels
             _userId = AppState.CurrentUser?.Id ?? 0;
             _dbService = DatabaseService.Instance;
 
+            // Загружаем приоритеты из БД
             Priorities = _dbService.GetPriorities();
             SelectedPriority = Priorities.FirstOrDefault();
 
@@ -124,6 +125,12 @@ namespace financial_planner.ViewModels
         {
             try
             {
+                if (SelectedPriority == null)
+                {
+                    ErrorMessage = "Выберите приоритет";
+                    return;
+                }
+
                 var goal = new Goal
                 {
                     UserId = _userId,
@@ -161,7 +168,10 @@ namespace financial_planner.ViewModels
             MessageBox.Show("Создание цели накопления:\n\n" +
                 "1. Введите название и описание цели\n" +
                 "2. Укажите целевую сумму\n" +
-                "3. Выберите приоритет\n" +
+                "3. Выберите приоритет:\n" +
+                "   - Первичный: деньги распределяются в первую очередь\n" +
+                "   - Вторичный: распределяются после первичных\n" +
+                "   - Остаточный: распределяются в последнюю очередь\n" +
                 "4. Укажите процент от свободных средств\n" +
                 "Важно: сумма процентов в одном приоритете не должна превышать 100%",
                 "Помощь", MessageBoxButton.OK, MessageBoxImage.Information);
