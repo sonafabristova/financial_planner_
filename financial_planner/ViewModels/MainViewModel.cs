@@ -132,8 +132,15 @@ namespace financial_planner.ViewModels
         private void LoadActiveGoals()
         {
             var goals = _dbService.GetUserGoals(_userId);
+            
+            System.Diagnostics.Debug.WriteLine($"Всего целей: {goals.Count}");
+            foreach (var g in goals)
+            {
+                System.Diagnostics.Debug.WriteLine($"Цель: {g.Name}, StatusId: {g.StatusId}");
+            }
             ActiveGoals = new ObservableCollection<Goal>(goals.Where(g => g.StatusId == 1));
             ActiveGoalsCount = ActiveGoals.Count;
+            System.Diagnostics.Debug.WriteLine($"Активных целей: {ActiveGoalsCount}");
         }
 
         private void ExecuteAddIncome(object parameter)
@@ -185,6 +192,7 @@ namespace financial_planner.ViewModels
                     window.ShowDialog();
                 }
             }
+            LoadData();
         }
 
         private void ExecuteGoals(object parameter)

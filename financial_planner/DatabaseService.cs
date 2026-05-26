@@ -31,13 +31,8 @@ namespace financial_planner
 
         private DatabaseService() { }
 
-        // СТАТИЧЕСКОЕ СОБЫТИЕ ДЛЯ ОБНОВЛЕНИЯ
         public static event Action DataChanged;
-        public static void NotifyDataChanged()
-        {
-            System.Diagnostics.Debug.WriteLine("=== NotifyDataChanged ВЫЗВАН ===");
-            DataChanged?.Invoke();
-        }
+        public static void NotifyDataChanged() => DataChanged?.Invoke();
 
         // ==================== Users ====================
         public User AuthenticateUser(string username, string password)
@@ -166,10 +161,21 @@ namespace financial_planner
         {
             using (var context = new PlannerContext())
             {
-                context.Goals.Update(goal);
-                context.SaveChanges();
-                NotifyDataChanged();
+                var existing = context.Goals.Find(goal.Id);
+                if (existing != null)
+                {
+                    existing.Name = goal.Name;
+                    existing.Description = goal.Description;
+                    existing.TargetAmount = goal.TargetAmount;
+                    existing.CurrentAmount = goal.CurrentAmount;
+                    existing.PriorityId = goal.PriorityId;
+                    existing.StatusId = goal.StatusId;
+                    existing.AllocationPercentage = goal.AllocationPercentage;
+                    existing.CompletedDate = goal.CompletedDate;
+                    context.SaveChanges();
+                }
             }
+            NotifyDataChanged();
         }
 
         public void DeleteGoal(int goalId)

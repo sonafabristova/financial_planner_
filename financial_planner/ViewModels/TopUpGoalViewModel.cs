@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using financial_planner.Models;
@@ -61,13 +62,8 @@ namespace financial_planner.ViewModels
             _goal = goal ?? throw new ArgumentNullException(nameof(goal));
             _dbService = DatabaseService.Instance;
 
-            TopUpCommand = new RelayCommand(ExecuteTopUp, CanExecuteTopUp);
+            TopUpCommand = new RelayCommand(ExecuteTopUp, o => Amount > 0 && Goal != null);
             CancelCommand = new RelayCommand(ExecuteCancel);
-        }
-
-        private bool CanExecuteTopUp(object parameter)
-        {
-            return Amount > 0 && Goal != null;
         }
 
         private void ExecuteTopUp(object parameter)
@@ -83,7 +79,7 @@ namespace financial_planner.ViewModels
                 var transaction = new Transaction
                 {
                     UserId = _userId,
-                    CategoryId = 12, // Другой расход
+                    CategoryId = 12,
                     Amount = Amount,
                     Date = DateTime.Now,
                     Note = $"Пополнение цели: {Goal.Name}"
@@ -94,8 +90,10 @@ namespace financial_planner.ViewModels
 
                 if (Goal.CurrentAmount >= Goal.TargetAmount)
                 {
-                    Goal.StatusId = 2; // Выполнена
+                    Goal.StatusId = 2;
                     Goal.CompletedDate = DateTime.Now;
+                    MessageBox.Show($"Поздравляем! Цель '{Goal.Name}' достигнута!",
+                                  "Цель выполнена", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 _dbService.UpdateGoal(Goal);
@@ -103,12 +101,7 @@ namespace financial_planner.ViewModels
                 MessageBox.Show($"Цель '{Goal.Name}' пополнена на {Amount:N0} ₽",
                               "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                var window = parameter as Window;
-                if (window != null)
-                {
-                    window.DialogResult = true;
-                    window.Close();
-                }
+                (parameter as Window)?.Close();
             }
             catch (Exception ex)
             {
@@ -118,12 +111,7 @@ namespace financial_planner.ViewModels
 
         private void ExecuteCancel(object parameter)
         {
-            var window = parameter as Window;
-            if (window != null)
-            {
-                window.DialogResult = false;
-                window.Close();
-            }
+            (parameter as Window)?.Close();
         }
     }
 }
